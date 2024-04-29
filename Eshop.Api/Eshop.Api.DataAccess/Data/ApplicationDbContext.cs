@@ -1,4 +1,5 @@
-﻿using Eshop.Api.Models.Products;
+﻿using Eshop.Api.Models.Order;
+using Eshop.Api.Models.Products;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,9 @@ namespace Eshop.Api.DataAccess.Data
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<Product> Products { get; set; }
 		public DbSet<ProductCategory> ProductCategories { get; set; }
+		public DbSet<Order> Orders { get; set; }
+		public DbSet<OrderProduct> OrderProducts { get; set; }
+		public DbSet<OrderStatus> OrderStatus { get; set; }
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -30,6 +34,32 @@ namespace Eshop.Api.DataAccess.Data
 				.HasOne(pc => pc.Category)
 				.WithMany(c => c.ProductCategories)
 				.HasForeignKey(pc => pc.CategoryId);
+
+			modelBuilder.Entity<OrderProduct>()
+				.HasKey(pc => new { pc.ProductId, pc.OrderId });
+
+			modelBuilder.Entity<OrderProduct>()
+				.HasOne(pc => pc.Product)
+				.WithMany(p => p.OrderProducts)
+				.HasForeignKey(pc => pc.ProductId);
+
+			modelBuilder.Entity<OrderProduct>()
+				.HasOne(pc => pc.Order)
+				.WithMany(c => c.OrderProducts)
+				.HasForeignKey(pc => pc.OrderId);
+
+			modelBuilder.Entity<OrderShipping>()
+				.HasKey(pc => new { pc.ShippingId, pc.OrderId });
+
+			modelBuilder.Entity<OrderShipping>()
+				.HasOne(pc => pc.Shipping)
+				.WithMany(p => p.OrderShipping)
+				.HasForeignKey(pc => pc.ShippingId);
+
+			modelBuilder.Entity<OrderShipping>()
+				.HasOne(pc => pc.Order)
+				.WithMany(c => c.OrderShipping)
+				.HasForeignKey(pc => pc.OrderId);
 		}
 	}
 }

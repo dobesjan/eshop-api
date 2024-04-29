@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Eshop.Api.Models.Order;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -24,5 +25,7 @@ namespace Eshop.Api.Models.Products
 		public int BuyLimit { get; set; }
 
 		public List<ProductCategory> ProductCategories { get; set; }
+
+		public List<OrderProduct> OrderProducts { get; set; }
 	}
 }
