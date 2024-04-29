@@ -3,6 +3,7 @@ using Eshop.Api.Models.Products;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,7 +69,7 @@ namespace Eshop.Api.DataAccess.Data
 				.HasForeignKey(pc => pc.OrderId);
 
 			modelBuilder.Entity<ShippingPaymentMethod>()
-				.HasKey(pc => new { pc.PaymentMethod, pc.Shipping });
+				.HasKey(pc => new { pc.PaymentMethodId, pc.ShippingId });
 
 			modelBuilder.Entity<ShippingPaymentMethod>()
 				.HasOne(pc => pc.PaymentMethod)
@@ -79,6 +80,12 @@ namespace Eshop.Api.DataAccess.Data
 				.HasOne(pc => pc.Shipping)
 				.WithMany(c => c.ShippingPaymentMethod)
 				.HasForeignKey(pc => pc.ShippingId);
+
+			modelBuilder.Entity<Category>()
+				.HasOne(c => c.ParentCategory)
+				.WithMany()
+				.HasForeignKey(c => c.ParentCategoryId)
+				.OnDelete(DeleteBehavior.Restrict);
 		}
 	}
 }

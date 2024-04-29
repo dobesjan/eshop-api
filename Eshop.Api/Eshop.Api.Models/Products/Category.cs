@@ -11,7 +11,7 @@ namespace Eshop.Api.Models.Products
 {
 	public class Category
 	{
-		[Key]
+		[DatabaseGenerated(DatabaseGeneratedOption.Identity), Key]
 		public int Id { get; set; }
 
 		[Required]
@@ -25,6 +25,7 @@ namespace Eshop.Api.Models.Products
 
 		public bool Enabled { get; set; }
 
+		[ValidateNever]
 		public List<ProductCategory> ProductCategories { get; set; }
 	}
 }

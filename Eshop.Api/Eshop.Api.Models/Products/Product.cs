@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.Models.Order;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -24,8 +25,10 @@ namespace Eshop.Api.Models.Products
 
 		public int BuyLimit { get; set; }
 
+		[ValidateNever]
 		public List<ProductCategory> ProductCategories { get; set; }
 
+		[ValidateNever]
 		public List<OrderProduct> OrderProducts { get; set; }
 	}
 }
