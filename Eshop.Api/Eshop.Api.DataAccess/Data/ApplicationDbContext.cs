@@ -14,9 +14,15 @@ namespace Eshop.Api.DataAccess.Data
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<Product> Products { get; set; }
 		public DbSet<ProductCategory> ProductCategories { get; set; }
+
 		public DbSet<Order> Orders { get; set; }
+		public DbSet<OrderShipping> OrderShippings { get; set; }
 		public DbSet<OrderProduct> OrderProducts { get; set; }
 		public DbSet<OrderStatus> OrderStatus { get; set; }
+		public DbSet<Payment> Payments { get; set; }
+		public DbSet<PaymentStatus> PaymentStatuses { get; set; }
+		public DbSet<Shipping> Shippings { get; set; }
+		public DbSet<ShippingPaymentMethod> ShippingPaymentMethods { get; set; }
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -60,6 +66,19 @@ namespace Eshop.Api.DataAccess.Data
 				.HasOne(pc => pc.Order)
 				.WithMany(c => c.OrderShipping)
 				.HasForeignKey(pc => pc.OrderId);
+
+			modelBuilder.Entity<ShippingPaymentMethod>()
+				.HasKey(pc => new { pc.PaymentMethod, pc.Shipping });
+
+			modelBuilder.Entity<ShippingPaymentMethod>()
+				.HasOne(pc => pc.PaymentMethod)
+				.WithMany(p => p.ShippingPaymentMethod)
+				.HasForeignKey(pc => pc.PaymentMethodId);
+
+			modelBuilder.Entity<ShippingPaymentMethod>()
+				.HasOne(pc => pc.Shipping)
+				.WithMany(c => c.ShippingPaymentMethod)
+				.HasForeignKey(pc => pc.ShippingId);
 		}
 	}
 }

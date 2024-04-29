@@ -7,18 +7,12 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.Models.Order
 {
-	public class Shipping
+	public class PaymentStatus
 	{
 		[Key]
 		public int Id { get; set; }
 
 		[Required]
 		public string Name { get; set; }
-
-		public bool Enabled { get; set; }
-
-		public List<OrderShipping> OrderShipping { get; set; }
-
-		public List<ShippingPaymentMethod> ShippingPaymentMethod { get; set; }
 	}
 }
