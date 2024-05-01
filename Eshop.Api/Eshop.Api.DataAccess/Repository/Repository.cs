@@ -1,5 +1,7 @@
 ﻿using Eshop.Api.DataAccess.Data;
 using Eshop.Api.DataAccess.Repository.Interfaces;
+using Eshop.Api.Models;
+using Eshop.Api.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.DataAccess.Repository
 {
-	public class Repository<T> : IRepository<T> where T : class
+	public class Repository<T> : IRepository<T> where T : Entity
 	{
 		private readonly ApplicationDbContext _db;
 		internal DbSet<T> dbset;
@@ -89,6 +91,17 @@ namespace Eshop.Api.DataAccess.Repository
 		public void Save()
 		{
 			_db.SaveChanges();
+		}
+
+		public bool IsStored(int id)
+		{
+			var storedEntity = Get(e => e.Id == id);
+			if (storedEntity != null)
+			{
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

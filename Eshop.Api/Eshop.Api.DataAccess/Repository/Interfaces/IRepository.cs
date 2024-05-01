@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Eshop.Api.Models.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.DataAccess.Repository.Interfaces
 {
-	public interface IRepository<T> where T : class
+	public interface IRepository<T> where T : IEntity
 	{
 		//T - Category
 		IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null);
@@ -17,5 +18,6 @@ namespace Eshop.Api.DataAccess.Repository.Interfaces
 		void Remove(T entity);
 		void RemoveRange(IEnumerable<T> entity);
 		void Save();
+		bool IsStored(int id);
 	}
 }

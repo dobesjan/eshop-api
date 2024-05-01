@@ -1,4 +1,5 @@
-﻿using Eshop.Api.Models.Order;
+﻿using Eshop.Api.Models.Interfaces;
+using Eshop.Api.Models.Order;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.Models.Products
 {
-	public class Product
+	public class Product : Entity
 	{
 		[Key]
 		public int Id { get; set; }

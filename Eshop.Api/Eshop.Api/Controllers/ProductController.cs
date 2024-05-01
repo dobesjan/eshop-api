@@ -9,11 +9,13 @@ namespace Eshop.Api.Controllers
 	{
 		public IRepository<Category> _categoryRepository;
 		public IRepository<Product> _productRepository;
+		public IRepository<ProductCategory> _productCategoryRepository;
 
-		public ProductController(IRepository<Category> categoryRepository, IRepository<Product> productRepository) 
+		public ProductController(IRepository<Category> categoryRepository, IRepository<Product> productRepository, IRepository<ProductCategory> productCategoryRepository) 
 		{
 			_categoryRepository = categoryRepository;
 			_productRepository = productRepository;
+			_productCategoryRepository = productCategoryRepository;
 		}
 
 		[HttpPost]
@@ -32,7 +34,7 @@ namespace Eshop.Api.Controllers
 					if (category.Id > 0)
 					{
 						Category persistedCategory = _categoryRepository.Get(p => p.Id == category.Id);
-						if (persistedCategory == null)
+						if (!_categoryRepository.IsStored(category.Id))
 						{
 							return Json(new { success = false, message = "Category not found in db!" });
 						}
@@ -74,8 +76,7 @@ namespace Eshop.Api.Controllers
 				{
 					if (product.Id > 0)
 					{
-						Product persistedProduct = _productRepository.Get(p => p.Id == product.Id);
-						if (persistedProduct == null)
+						if (!_productRepository.IsStored(product.Id))
 						{
 							return Json(new { success = false, message = "Product not found in db!" });
 						}
@@ -96,6 +97,51 @@ namespace Eshop.Api.Controllers
 					return Json(new { success = false, message = "Product is null!" });
 				}
 				
+			}
+			catch (Exception ex)
+			{
+				return Json(new { success = false, message = ex.Message });
+			}
+		}
+
+		[HttpPost]
+		[Route("api/[controller]/addProductToCategory")]
+		public IActionResult AddProductToCategory([FromBody] ProductCategory productCategory)
+		{
+			if (!ModelState.IsValid)
+			{
+				var errorMessages = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage));
+				return Json(new { success = false, message = "Validation failed", errors = errorMessages });
+			}
+
+			try
+			{
+				if (productCategory != null)
+				{
+					if (!_productRepository.IsStored(productCategory.ProductId))
+					{
+						return Json(new { success = false, message = "Product not found in db!" });
+					}
+
+					if (!_productRepository.IsStored(productCategory.CategoryId))
+					{
+						return Json(new { success = false, message = "Category not found in db!" });
+					}
+
+					if (_productCategoryRepository.IsStored(productCategory.Id))
+					{
+						return Json(new { success = false, message = "Category linked." });
+					}
+
+					_productCategoryRepository.Add(productCategory);
+					_productCategoryRepository.Save();
+					return Json(new { success = false, message = "Category linked." });
+				}
+				else
+				{
+					return Json(new { success = false, message = "Product is null!" });
+				}
+
 			}
 			catch (Exception ex)
 			{

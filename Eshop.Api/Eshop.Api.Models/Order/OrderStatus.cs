@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Eshop.Api.Models.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.Models.Order
 {
-	public class OrderStatus
+	public class OrderStatus : Entity
 	{
 		[Key]
 		public int Id { get; set; }

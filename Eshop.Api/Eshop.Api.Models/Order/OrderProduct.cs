@@ -1,14 +1,19 @@
-﻿using Eshop.Api.Models.Products;
+﻿using Eshop.Api.Models.Interfaces;
+using Eshop.Api.Models.Products;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Eshop.Api.Models.Order
 {
-	public class OrderProduct
+	public class OrderProduct : Entity
 	{
+		[Key]
+		public int Id { get; set; }
+
 		public int ProductId { get; set; }
 		public Product Product { get; set; }
 
