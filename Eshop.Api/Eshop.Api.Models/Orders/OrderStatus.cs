@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Eshop.Api.Models.Order
+namespace Eshop.Api.Models.Orders
 {
 	public class OrderStatus : Entity
 	{

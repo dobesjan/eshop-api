@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Eshop.Api.Models.Order
+namespace Eshop.Api.Models.Orders
 {
 	public class Order : Entity
 	{
@@ -28,5 +28,7 @@ namespace Eshop.Api.Models.Order
 		public List<OrderProduct> OrderProducts { get; set; }
 
 		public List<OrderShipping> OrderShipping { get; set; }
+
+		public List<OrderCustomer> CustomerContacts { get; set; }
 	}
 }

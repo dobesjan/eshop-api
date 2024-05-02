@@ -1,5 +1,5 @@
 ﻿using Eshop.Api.Models.Interfaces;
-using Eshop.Api.Models.Order;
+using Eshop.Api.Models.Orders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
