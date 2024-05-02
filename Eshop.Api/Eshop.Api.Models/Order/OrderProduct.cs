@@ -11,9 +11,6 @@ namespace Eshop.Api.Models.Order
 {
 	public class OrderProduct : Entity
 	{
-		[Key]
-		public int Id { get; set; }
-
 		public int ProductId { get; set; }
 		public Product Product { get; set; }
 

@@ -12,9 +12,6 @@ namespace Eshop.Api.Models.Order
 {
 	public class Payment : Entity
 	{
-		[Key]
-		public int Id { get; set; }
-
 		public int OrderId { get; set; }
 
 		[ForeignKey(nameof(OrderId))]

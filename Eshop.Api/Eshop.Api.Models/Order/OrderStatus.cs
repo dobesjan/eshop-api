@@ -10,9 +10,6 @@ namespace Eshop.Api.Models.Order
 {
 	public class OrderStatus : Entity
 	{
-		[Key]
-		public int Id { get; set; }
-
 		[Required]
 		public string Name { get; set; }
 	}

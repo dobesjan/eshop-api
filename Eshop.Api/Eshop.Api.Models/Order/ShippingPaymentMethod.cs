@@ -10,9 +10,6 @@ namespace Eshop.Api.Models.Order
 {
 	public class ShippingPaymentMethod : Entity
 	{
-		[Key]
-		public int Id { get; set; }
-
 		public int ShippingId { get; set; }
 		public Shipping Shipping { get; set; }
 

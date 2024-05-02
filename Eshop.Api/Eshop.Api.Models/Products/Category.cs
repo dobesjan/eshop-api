@@ -12,9 +12,6 @@ namespace Eshop.Api.Models.Products
 {
 	public class Category : Entity
 	{
-		[DatabaseGenerated(DatabaseGeneratedOption.Identity), Key]
-		public int Id { get; set; }
-
 		[Required]
 		public string Name { get; set; }
 
