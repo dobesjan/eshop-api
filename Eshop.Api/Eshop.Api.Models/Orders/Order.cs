@@ -1,4 +1,5 @@
-﻿using Eshop.Api.Models.Interfaces;
+﻿using Eshop.Api.Models.Contacts;
+using Eshop.Api.Models.Interfaces;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
@@ -29,6 +30,13 @@ namespace Eshop.Api.Models.Orders
 
 		public List<OrderShipping> OrderShipping { get; set; }
 
+		//TODO: Consider if we need multiple customers for one order
 		public List<OrderCustomer> CustomerContacts { get; set; }
+
+		public int AddressId { get; set; }
+
+		[ForeignKey(nameof(AddressId))]
+		[ValidateNever]
+		public Address DeliveryAddress { get; set; }
 	}
 }

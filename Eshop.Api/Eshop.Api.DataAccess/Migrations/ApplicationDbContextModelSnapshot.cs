@@ -157,6 +157,9 @@ namespace Eshop.Api.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AddressId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -171,6 +174,8 @@ namespace Eshop.Api.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("OrderStatusId");
 
@@ -568,11 +573,19 @@ namespace Eshop.Api.DataAccess.Migrations
 
             modelBuilder.Entity("Eshop.Api.Models.Orders.Order", b =>
                 {
+                    b.HasOne("Eshop.Api.Models.Contacts.Address", "DeliveryAddress")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Eshop.Api.Models.Orders.OrderStatus", "OrderStatus")
                         .WithMany()
                         .HasForeignKey("OrderStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("DeliveryAddress");
 
                     b.Navigation("OrderStatus");
                 });

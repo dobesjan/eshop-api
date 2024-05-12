@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eshop.Api.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240502213605_contacts")]
-    partial class contacts
+    [Migration("20240512191043_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -160,6 +160,9 @@ namespace Eshop.Api.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AddressId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -174,6 +177,8 @@ namespace Eshop.Api.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("OrderStatusId");
 
@@ -502,6 +507,33 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.ToTable("ProductCategories");
                 });
 
+            modelBuilder.Entity("Eshop.Api.Models.Products.ProductPriceList", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("Cost")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CostBefore")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CostWithTax")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductPrices");
+                });
+
             modelBuilder.Entity("Eshop.Api.Models.Contacts.Customer", b =>
                 {
                     b.HasBaseType("Eshop.Api.Models.Contacts.Contact");
@@ -544,11 +576,19 @@ namespace Eshop.Api.DataAccess.Migrations
 
             modelBuilder.Entity("Eshop.Api.Models.Orders.Order", b =>
                 {
+                    b.HasOne("Eshop.Api.Models.Contacts.Address", "DeliveryAddress")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Eshop.Api.Models.Orders.OrderStatus", "OrderStatus")
                         .WithMany()
                         .HasForeignKey("OrderStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("DeliveryAddress");
 
                     b.Navigation("OrderStatus");
                 });
@@ -674,6 +714,17 @@ namespace Eshop.Api.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Eshop.Api.Models.Products.ProductPriceList", b =>
+                {
+                    b.HasOne("Eshop.Api.Models.Products.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
                 });

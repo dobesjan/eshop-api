@@ -54,6 +54,12 @@ namespace Eshop.Api.DataAccess.Data
 				.WithMany(c => c.ProductCategories)
 				.HasForeignKey(pc => pc.CategoryId);
 
+			modelBuilder.Entity<Order>()
+				.HasOne(o => o.DeliveryAddress)
+				.WithMany()
+				.HasForeignKey(o => o.AddressId)
+				.OnDelete(DeleteBehavior.NoAction);
+
 			modelBuilder.Entity<OrderProduct>()
 				.HasKey(pc => new { pc.ProductId, pc.OrderId });
 
