@@ -63,9 +63,9 @@ namespace Eshop.Api.Controllers
 			return UpsertEntity(product, _productRepository, true);
 		}
 
-		[HttpPost]
+		[HttpGet]
 		[Route("api/[controller]/linkImage")]
-		public IActionResult UpsertProduct(int productId, int imageId)
+		public IActionResult LinkImage(int productId, int imageId)
 		{
 			if (!_productRepository.IsStored(productId))
 			{
@@ -86,7 +86,7 @@ namespace Eshop.Api.Controllers
 					ImageId = imageId
 				};
 
-				_productImageRepository.Update(link);
+				_productImageRepository.Add(link);
 				_productImageRepository.Save();
 
 				return Json(new { success = true, message = "Image succesfully linked to product." });
@@ -97,7 +97,7 @@ namespace Eshop.Api.Controllers
 			}
 		}
 
-		[HttpPost]
+		[HttpGet]
 		[Route("api/[controller]/unlinkImage")]
 		public IActionResult UnlinkImage(int productId, int imageId)
 		{
