@@ -15,11 +15,11 @@ namespace Eshop.Api.Models.Products
 		[Required]
 		public string Name { get; set; }
 
-		public int ParentCategoryId { get; set; }
+		public int? ParentCategoryId { get; set; }
 
 		[ForeignKey(nameof(ParentCategoryId))]
 		[ValidateNever]
-		public Category ParentCategory { get; set; }
+		public Category? ParentCategory { get; set; }
 
 		public bool Enabled { get; set; }
 
