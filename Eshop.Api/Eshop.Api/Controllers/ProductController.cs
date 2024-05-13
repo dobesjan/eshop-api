@@ -2,6 +2,8 @@
 using Eshop.Api.Models.Images;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Eshop.Api.Controllers
 {
@@ -39,14 +41,20 @@ namespace Eshop.Api.Controllers
 
 			if (limit > 0)
 			{
-				products = _productRepository.GetAll(offset: offset, limit: limit);
+				products = _productRepository.GetAll(includeProperties: "ProductCategories", offset: offset, limit: limit);
 			}
 			else
 			{
-				products = _productRepository.GetAll();
+				products = _productRepository.GetAll(includeProperties: "ProductCategories");
 			}
 
-			return Json(new { products });
+			var options = new JsonSerializerOptions
+			{
+				ReferenceHandler = ReferenceHandler.Preserve,
+				MaxDepth = 32
+			};
+
+			return Json(new { products }, options);
 		}
 
 		[HttpPost]
