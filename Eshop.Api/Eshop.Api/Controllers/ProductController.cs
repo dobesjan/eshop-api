@@ -23,6 +23,32 @@ namespace Eshop.Api.Controllers
 			_productImageRepository = productImageRepository;
 		}
 
+		[HttpGet]
+		[Route("api/[controller]/listCategories")]
+		public IActionResult ListCategories()
+		{
+			var categories = _categoryRepository.GetAll();
+			return Json(new { categories });
+		}
+
+		[HttpGet]
+		[Route("api/[controller]/listProducts")]
+		public IActionResult ListProducts(int offset = 0, int limit = 0)
+		{
+			IEnumerable<Product> products = null;
+
+			if (limit > 0)
+			{
+				products = _productRepository.GetAll(offset: offset, limit: limit);
+			}
+			else
+			{
+				products = _productRepository.GetAll();
+			}
+
+			return Json(new { products });
+		}
+
 		[HttpPost]
 		[Route("api/[controller]/upsertCategory")]
 		public IActionResult UpsertCategory([FromBody] Category category)

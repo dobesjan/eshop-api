@@ -59,7 +59,7 @@ namespace Eshop.Api.DataAccess.Repository
 			return query.Where(filter).FirstOrDefault();
 		}
 
-		public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
+		public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, int offset = 0, int limit = 0)
 		{
 			IQueryable<T> query = dbset;
 			if (filter != null)
@@ -75,6 +75,12 @@ namespace Eshop.Api.DataAccess.Repository
 					query = query.Include(includeProp);
 				}
 			}
+
+			if (limit > 0)
+			{
+				query = query.Skip(offset).Take(limit);
+			}
+
 			return query.ToList();
 		}
 
