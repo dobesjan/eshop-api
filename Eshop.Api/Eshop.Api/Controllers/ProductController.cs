@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.DataAccess.Repository.Interfaces;
+using Eshop.Api.Models.Images;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +11,16 @@ namespace Eshop.Api.Controllers
 		public IRepository<Category> _categoryRepository;
 		public IRepository<Product> _productRepository;
 		public IRepository<ProductCategory> _productCategoryRepository;
+		public IRepository<Image> _imageRepository;
+		public IRepository<ProductImage> _productImageRepository;
 
-		public ProductController(IRepository<Category> categoryRepository, IRepository<Product> productRepository, IRepository<ProductCategory> productCategoryRepository) 
+		public ProductController(IRepository<Category> categoryRepository, IRepository<Product> productRepository, IRepository<ProductCategory> productCategoryRepository, IRepository<Image> imageRepository, IRepository<ProductImage> productImageRepository) 
 		{
 			_categoryRepository = categoryRepository;
 			_productRepository = productRepository;
 			_productCategoryRepository = productCategoryRepository;
+			_imageRepository = imageRepository;
+			_productImageRepository = productImageRepository;
 		}
 
 		[HttpPost]
@@ -30,6 +35,57 @@ namespace Eshop.Api.Controllers
 		public IActionResult UpsertProduct([FromBody] Product product)
 		{
 			return UpsertEntity(product, _productRepository, true);
+		}
+
+		[HttpPost]
+		[Route("api/[controller]/linkImage")]
+		public IActionResult UpsertProduct(int productId, int imageId)
+		{
+			if (!_productRepository.IsStored(productId))
+			{
+				return Json(new { success = false, message = "Product not found in db!" });
+			}
+
+			if (!_imageRepository.IsStored(imageId))
+			{
+				return Json(new { success = false, message = "Image not found in db!" });
+			}
+
+			var productImage = _productImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
+			if (productImage == null)
+			{
+				var link = new ProductImage
+				{
+					ProductId = productId,
+					ImageId = imageId
+				};
+
+				_productImageRepository.Update(link);
+				_productImageRepository.Save();
+
+				return Json(new { success = true, message = "Image succesfully linked to product." });
+			}
+			else
+			{
+				return Json(new { success = true, message = "Image already linked." });
+			}
+		}
+
+		[HttpPost]
+		[Route("api/[controller]/unlinkImage")]
+		public IActionResult UnlinkImage(int productId, int imageId)
+		{
+			var productImage = _productImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
+			if (productImage == null)
+			{
+				return Json(new { success = true, message = "Image already unlinked." });
+			}
+			else
+			{
+				_productImageRepository.Remove(productImage);
+				_productImageRepository.Save();
+				return Json(new { success = true, message = "Image unlinked." });
+			}
 		}
 
 		[HttpPost]

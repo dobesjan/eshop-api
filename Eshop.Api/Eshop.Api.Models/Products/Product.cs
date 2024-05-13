@@ -28,5 +28,8 @@ namespace Eshop.Api.Models.Products
 
 		[ValidateNever]
 		public List<OrderProduct> OrderProducts { get; set; }
+
+		[ValidateNever]
+		public List<ProductImage> ProductImages { get; set; }
 	}
 }

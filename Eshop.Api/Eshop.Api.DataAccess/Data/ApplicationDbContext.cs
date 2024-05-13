@@ -54,6 +54,19 @@ namespace Eshop.Api.DataAccess.Data
 				.WithMany(c => c.ProductCategories)
 				.HasForeignKey(pc => pc.CategoryId);
 
+			modelBuilder.Entity<ProductImage>()
+				.HasKey(pc => new { pc.ProductId, pc.ImageId });
+
+			modelBuilder.Entity<ProductImage>()
+				.HasOne(pc => pc.Product)
+				.WithMany(p => p.ProductImages)
+				.HasForeignKey(pc => pc.ProductId);
+
+			modelBuilder.Entity<ProductImage>()
+				.HasOne(pc => pc.Image)
+				.WithMany(c => c.ProductImages)
+				.HasForeignKey(pc => pc.ImageId);
+
 			modelBuilder.Entity<Order>()
 				.HasOne(o => o.DeliveryAddress)
 				.WithMany()
