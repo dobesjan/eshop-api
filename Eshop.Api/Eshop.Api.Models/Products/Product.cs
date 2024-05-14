@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Eshop.Api.Models.Products
@@ -37,5 +38,20 @@ namespace Eshop.Api.Models.Products
 		[ValidateNever]
 		[InverseProperty(nameof(Product))]
 		public List<ProductPriceList>? ProductPrices { get; set; }
+
+		public override object ToJson()
+		{
+			return new
+			{
+				Id = Id,
+				Name = Name,
+				Enabled = Enabled,
+				IsInStock = IsInStock,
+				BuyLimit = BuyLimit,
+				Categories = ProductCategories != null && ProductCategories.Any() ? ProductCategories.Select(pc => pc.Category).ToList().Select(cc => new { Id = cc.Id, Name = cc.Name, Enabled = cc.Enabled }) : null,
+				Images = ProductImages != null && ProductImages.Any() ? ProductImages.Select(pi => pi.Image).ToList().Select(i => new { Id = i.Id, FileName = i.FileName }) : null,
+				Prices = ProductPrices != null && ProductPrices.Any() ? ProductPrices.ToList().Select(pr => new { Id = pr.Id, Cost = pr.Cost, CostWithTax = pr.CostWithTax, CostBefore = pr.CostBefore, Currency = pr.Currency }) : null
+			};
+		}
 	}
 }

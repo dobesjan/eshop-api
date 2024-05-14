@@ -75,19 +75,7 @@ namespace Eshop.Api.Controllers
 				return Json(new { success = false, message = "Product not found in db!" });
 			}
 
-			var data = new
-			{
-				Id = product.Id,
-				Name = product.Name,
-				Enabled = product.Enabled,
-				IsInStock = product.IsInStock,
-				BuyLimit = product.BuyLimit,
-				Categories = product.ProductCategories != null && product.ProductCategories.Any() ? product.ProductCategories.Select(pc => pc.Category).ToList().Select(cc => new { Id = cc.Id, Name = cc.Name, Enabled = cc.Enabled }) : null,
-				Images = product.ProductImages != null && product.ProductImages.Any() ? product.ProductImages.Select(pi => pi.Image).ToList().Select(i => new { Id = i.Id, FileName = i.FileName }) : null,
-				Prices = product.ProductPrices != null && product.ProductPrices.Any() ? product.ProductPrices.ToList().Select(pr => new { Id = pr.Id, Cost = pr.Cost, CostWithTax = pr.CostWithTax, CostBefore = pr.CostBefore, Currency = pr.Currency }) : null
-			};
-
-			return Json(new { data });
+			return Json(new { data = product.ToJson() });
 		}
 
 		[HttpGet]
@@ -106,17 +94,7 @@ namespace Eshop.Api.Controllers
 				products = _productRepository.GetAll(includeProperties: properties);
 			}
 
-			var data = products.Select(c => new
-			{
-				Id = c.Id,
-				Name = c.Name,
-				Enabled = c.Enabled,
-				IsInStock = c.IsInStock,
-				BuyLimit = c.BuyLimit,
-				Categories = c.ProductCategories != null && c.ProductCategories.Any() ? c.ProductCategories.Select(pc => pc.Category).ToList().Select(cc => new { Id = cc.Id, Name = cc.Name, Enabled = cc.Enabled }) : null,
-				Images = c.ProductImages != null && c.ProductImages.Any() ? c.ProductImages.Select(pi => pi.Image).ToList().Select(i => new { Id = i.Id, FileName = i.FileName }) : null,
-				Prices = c.ProductPrices != null && c.ProductPrices.Any() ? c.ProductPrices.ToList().Select(pr => new { Id = pr.Id, Cost = pr.Cost, CostWithTax = pr.CostWithTax, CostBefore = pr.CostBefore, Currency = pr.Currency }) : null
-			}).ToList();
+			var data = products.Select(c => c.ToJson()).ToList();
 
 			return Json(new { products = data });
 		}

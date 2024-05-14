@@ -12,5 +12,10 @@ namespace Eshop.Api.Models
 	{
 		[Key]
 		public int Id { get ; set ; }
+
+		public virtual object ToJson()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
