@@ -34,6 +34,24 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpGet]
+		[Route("api/[controller]/getCategory")]
+		public IActionResult GetCategory(int id = 0)
+		{
+			if (id == 0)
+			{
+				return Json(new { success = false, message = "Category not found in db!" });
+			}
+
+			var category = _categoryRepository.Get(c => c.Id == id, includeProperties: "ParentCategory");
+			if (category == null)
+			{
+				return Json(new { success = false, message = "Category not found in db!" });
+			}
+
+			return Json(new { category });
+		}
+
+		[HttpGet]
 		[Route("api/[controller]/listProducts")]
 		public IActionResult ListProducts(int offset = 0, int limit = 0)
 		{
