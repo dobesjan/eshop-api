@@ -41,20 +41,25 @@ namespace Eshop.Api.Controllers
 
 			if (limit > 0)
 			{
-				products = _productRepository.GetAll(includeProperties: "ProductCategories", offset: offset, limit: limit);
+				products = _productRepository.GetAll(includeProperties: "ProductCategories.Category,ProductImages.Image", offset: offset, limit: limit);
 			}
 			else
 			{
-				products = _productRepository.GetAll(includeProperties: "ProductCategories");
+				products = _productRepository.GetAll(includeProperties: "ProductCategories.Category,ProductImages.Image");
 			}
 
-			var options = new JsonSerializerOptions
+			var data = products.Select(c => new
 			{
-				ReferenceHandler = ReferenceHandler.Preserve,
-				MaxDepth = 32
-			};
+				Id = c.Id,
+				Name = c.Name,
+				Enabled = c.Enabled,
+				IsInStock = c.IsInStock,
+				BuyLimit = c.BuyLimit,
+				Categories = c.ProductCategories != null && c.ProductCategories.Any() ? c.ProductCategories.Select(pc => pc.Category).ToList().Select(cc => new { Id = cc.Id, Name = cc.Name, Enabled = cc.Enabled }) : null,
+				Images = c.ProductImages != null && c.ProductImages.Any() ? c.ProductImages.Select(pi => pi.Image).ToList().Select(i => new { Id = i.Id, FileName = i.FileName }) : null
+			}).ToList();
 
-			return Json(new { products }, options);
+			return Json(new { products = data });
 		}
 
 		[HttpPost]
