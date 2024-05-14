@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.Models.Contacts;
+using Eshop.Api.Models.Currencies;
 using Eshop.Api.Models.Orders;
 using Eshop.Api.Models.Products;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,8 @@ namespace Eshop.Api.DataAccess.Data
 		public DbSet<Contact> Contacts { get; set; }
 		public DbSet<Customer> Customers { get; set; }
 		public DbSet<Person> Persons { get; set; }
+
+		public DbSet<Currency> Currencies { get; set; }
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -159,6 +162,11 @@ namespace Eshop.Api.DataAccess.Data
 				new OrderStatus { Id = 4, Name = "Order sent" },
 				new OrderStatus { Id = 5, Name = "Order in delivery service" },
 				new OrderStatus { Id = 6, Name = "Order processed" }
+			);
+
+			modelBuilder.Entity<Currency>().HasData(
+				new Currency { Id = 1, Name = "Česká koruna", Acronym = "Kč" },
+				new Currency { Id = 2, Name = "Euro", Acronym = "€" }
 			);
 		}
 	}

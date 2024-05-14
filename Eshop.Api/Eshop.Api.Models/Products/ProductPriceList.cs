@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Eshop.Api.Models.Currencies;
 
 namespace Eshop.Api.Models.Products
 {
@@ -19,5 +20,11 @@ namespace Eshop.Api.Models.Products
 		[ForeignKey(nameof(ProductId))]
 		[ValidateNever]
 		public Product Product { get; set; }
+
+		public int CurrencyId { get; set; }
+
+		[ForeignKey(nameof(CurrencyId))]
+		[ValidateNever]
+		public Currency Currency { get; set; }
 	}
 }

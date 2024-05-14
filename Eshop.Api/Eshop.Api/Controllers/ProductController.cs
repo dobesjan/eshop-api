@@ -15,14 +15,23 @@ namespace Eshop.Api.Controllers
 		public IRepository<ProductCategory> _productCategoryRepository;
 		public IRepository<Image> _imageRepository;
 		public IRepository<ProductImage> _productImageRepository;
+		public IRepository<ProductPriceList> _productPriceListRepository;
 
-		public ProductController(IRepository<Category> categoryRepository, IRepository<Product> productRepository, IRepository<ProductCategory> productCategoryRepository, IRepository<Image> imageRepository, IRepository<ProductImage> productImageRepository) 
+		public ProductController(
+			IRepository<Category> categoryRepository,
+			IRepository<Product> productRepository,
+			IRepository<ProductCategory> productCategoryRepository,
+			IRepository<Image> imageRepository,
+			IRepository<ProductImage> productImageRepository,
+			IRepository<ProductPriceList> productPriceListRepository
+			) 
 		{
 			_categoryRepository = categoryRepository;
 			_productRepository = productRepository;
 			_productCategoryRepository = productCategoryRepository;
 			_imageRepository = imageRepository;
 			_productImageRepository = productImageRepository;
+			_productPriceListRepository = productPriceListRepository;
 		}
 
 		[HttpGet]
@@ -56,14 +65,15 @@ namespace Eshop.Api.Controllers
 		public IActionResult ListProducts(int offset = 0, int limit = 0)
 		{
 			IEnumerable<Product> products = null;
+			var properties = "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency";
 
 			if (limit > 0)
 			{
-				products = _productRepository.GetAll(includeProperties: "ProductCategories.Category,ProductImages.Image", offset: offset, limit: limit);
+				products = _productRepository.GetAll(includeProperties: properties, offset: offset, limit: limit);
 			}
 			else
 			{
-				products = _productRepository.GetAll(includeProperties: "ProductCategories.Category,ProductImages.Image");
+				products = _productRepository.GetAll(includeProperties: properties);
 			}
 
 			var data = products.Select(c => new
@@ -74,7 +84,8 @@ namespace Eshop.Api.Controllers
 				IsInStock = c.IsInStock,
 				BuyLimit = c.BuyLimit,
 				Categories = c.ProductCategories != null && c.ProductCategories.Any() ? c.ProductCategories.Select(pc => pc.Category).ToList().Select(cc => new { Id = cc.Id, Name = cc.Name, Enabled = cc.Enabled }) : null,
-				Images = c.ProductImages != null && c.ProductImages.Any() ? c.ProductImages.Select(pi => pi.Image).ToList().Select(i => new { Id = i.Id, FileName = i.FileName }) : null
+				Images = c.ProductImages != null && c.ProductImages.Any() ? c.ProductImages.Select(pi => pi.Image).ToList().Select(i => new { Id = i.Id, FileName = i.FileName }) : null,
+				Prices = c.ProductPrices != null && c.ProductPrices.Any() ? c.ProductPrices.ToList().Select(pr => new { Id = pr.Id, Cost = pr.Cost, CostWithTax = pr.CostWithTax, CostBefore = pr.CostBefore, Currency = pr.Currency }) : null
 			}).ToList();
 
 			return Json(new { products = data });
@@ -92,6 +103,13 @@ namespace Eshop.Api.Controllers
 		public IActionResult UpsertProduct([FromBody] Product product)
 		{
 			return UpsertEntity(product, _productRepository, true);
+		}
+
+		[HttpPost]
+		[Route("api/[controller]/upsertProductPrice")]
+		public IActionResult UpsertProductPrice([FromBody] ProductPriceList priceList)
+		{
+			return UpsertEntity(priceList, _productPriceListRepository, true);
 		}
 
 		[HttpGet]
