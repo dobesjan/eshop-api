@@ -61,6 +61,36 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpGet]
+		[Route("api/[controller]/getProduct")]
+		public IActionResult GetProduct(int id = 0)
+		{
+			if (id == 0)
+			{
+				return Json(new { success = false, message = "Product not found in db!" });
+			}
+
+			var product = _productRepository.Get(c => c.Id == id, includeProperties: "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency");
+			if (product == null)
+			{
+				return Json(new { success = false, message = "Product not found in db!" });
+			}
+
+			var data = new
+			{
+				Id = product.Id,
+				Name = product.Name,
+				Enabled = product.Enabled,
+				IsInStock = product.IsInStock,
+				BuyLimit = product.BuyLimit,
+				Categories = product.ProductCategories != null && product.ProductCategories.Any() ? product.ProductCategories.Select(pc => pc.Category).ToList().Select(cc => new { Id = cc.Id, Name = cc.Name, Enabled = cc.Enabled }) : null,
+				Images = product.ProductImages != null && product.ProductImages.Any() ? product.ProductImages.Select(pi => pi.Image).ToList().Select(i => new { Id = i.Id, FileName = i.FileName }) : null,
+				Prices = product.ProductPrices != null && product.ProductPrices.Any() ? product.ProductPrices.ToList().Select(pr => new { Id = pr.Id, Cost = pr.Cost, CostWithTax = pr.CostWithTax, CostBefore = pr.CostBefore, Currency = pr.Currency }) : null
+			};
+
+			return Json(new { data });
+		}
+
+		[HttpGet]
 		[Route("api/[controller]/listProducts")]
 		public IActionResult ListProducts(int offset = 0, int limit = 0)
 		{
