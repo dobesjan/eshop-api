@@ -35,6 +35,38 @@ namespace Eshop.Api.Controllers
 			return Json(new { images });
 		}
 
+		[HttpGet]
+		[Route("api/[controller]/get")]
+		public IActionResult GetImage(int id = 0)
+		{
+			try
+			{
+				var image = _imageService.GetImage(id);
+				return Json(new { data = image });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Image not found!" });
+			}
+		}
+
+		[HttpGet]
+		[Route("api/[controller]/getImageGroup")]
+		public IActionResult GetImageGroup(int id = 0)
+		{
+			try
+			{
+				var group = _imageService.GetImageGroup(id);
+				return Json(new { data = group });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Image group not found!" });
+			}
+		}
+
 		[HttpPost]
 		[Route("api/[controller]/upsertImageGroup")]
 		public IActionResult UpsertImageGroup([FromBody] ImageGroup imageGroup)

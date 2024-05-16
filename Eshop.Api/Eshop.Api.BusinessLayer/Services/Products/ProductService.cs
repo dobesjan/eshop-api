@@ -37,6 +37,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 			_productPriceListRepository = productPriceListRepository;
 		}
 
+		//TODO: Consider refactor (merge all of these types of methods to one).
 		public bool AddProductToCategory(ProductCategory category)
 		{
 			if (!_productRepository.IsStored(category.ProductId))
@@ -73,6 +74,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 			return product;
 		}
 
+		//TODO: Consider refactor (merge all of these types of methods to one).
 		public IEnumerable<Product> GetProducts(int offset = 0, int limit = 0, int categoryId = 0)
 		{
 			IEnumerable<Product> products = null;
@@ -99,6 +101,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 			return products;
 		}
 
+		//TODO: Consider refactor (merge all of these types of methods to one).
 		public bool LinkImageToProduct(int productId, int imageId)
 		{
 			if (!_productRepository.IsStored(productId))
@@ -127,6 +130,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 			return true;
 		}
 
+		//TODO: Consider refactor (merge all of these types of methods to one).
 		public bool UnlinkImageFromProduct(int productId, int imageId)
 		{
 			var productImage = _productImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
