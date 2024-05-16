@@ -4,125 +4,116 @@ using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Eshop.Api.Controllers
 {
 	[ApiController]
 	public class ProductController : EshopApiControllerBase
 	{
-		public IRepository<Category> _categoryRepository;
-		public IRepository<Product> _productRepository;
-		public IRepository<ProductCategory> _productCategoryRepository;
-		public IRepository<Image> _imageRepository;
-		public IRepository<ProductImage> _productImageRepository;
-		public IRepository<ProductPriceList> _productPriceListRepository;
+		private IProductService _productService;
+		private readonly ILogger _logger;
 
-		public ProductController(
-			IRepository<Category> categoryRepository,
-			IRepository<Product> productRepository,
-			IRepository<ProductCategory> productCategoryRepository,
-			IRepository<Image> imageRepository,
-			IRepository<ProductImage> productImageRepository,
-			IRepository<ProductPriceList> productPriceListRepository
-			) 
+		public ProductController(IProductService productService, ILogger<ProductController> logger) 
 		{
-			_categoryRepository = categoryRepository;
-			_productRepository = productRepository;
-			_productCategoryRepository = productCategoryRepository;
-			_imageRepository = imageRepository;
-			_productImageRepository = productImageRepository;
-			_productPriceListRepository = productPriceListRepository;
+			_productService = productService;
+			_logger = logger;
 		}
 
 		[HttpGet]
 		[Route("api/[controller]/get")]
 		public IActionResult GetProduct(int id = 0)
 		{
-			if (id == 0)
+			try
 			{
-				return Json(new { success = false, message = "Product not found in db!" });
+				var product = _productService.GetProduct(id);
+				return Json(new { data = product.ToJson() });
 			}
-
-			var product = _productRepository.Get(c => c.Id == id, includeProperties: "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency");
-			if (product == null)
+			catch (Exception ex)
 			{
-				return Json(new { success = false, message = "Product not found in db!" });
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Product not found!" });
 			}
-
-			return Json(new { data = product.ToJson() });
 		}
 
 		[HttpGet]
 		[Route("api/[controller]/list")]
 		public IActionResult ListProducts(int offset = 0, int limit = 0, int categoryId = 0)
 		{
-			IEnumerable<Product> products = null;
-			var properties = "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency";
-
-			if (limit > 0)
+			try
 			{
-				products = _productRepository.GetAll(includeProperties: properties, offset: offset, limit: limit);
+				var products = _productService.GetProducts(offset, limit, categoryId);
+				var data = products.Select(c => c.ToJson()).ToList();
+				return Json(new { products = data });
 			}
-			else
+			catch(Exception ex)
 			{
-				products = _productRepository.GetAll(includeProperties: properties);
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Problem while retrieving products!" });
 			}
-
-			if (categoryId > 0 && products != null)
-			{
-				products = products.Where(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId));
-			}
-
-			var data = products.Select(c => c.ToJson()).ToList();
-
-			return Json(new { products = data });
 		}
 
 		[HttpPost]
 		[Route("api/[controller]/upsert")]
 		public IActionResult UpsertProduct([FromBody] Product product)
 		{
-			return UpsertEntity(product, _productRepository, true);
+			try
+			{
+				var success =  _productService.UpsertProduct(product);
+				if (!success)
+				{
+					return Json(new { success = false, message = "Problem while saving product!" });
+				}
+
+				return Json(new { success = true, message = "Product saved succesfully!" });
+			}
+			catch(Exception ex)
+			{
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Problem while saving product!" });
+			}
 		}
 
 		[HttpPost]
 		[Route("api/[controller]/upsertProductPrice")]
 		public IActionResult UpsertProductPrice([FromBody] ProductPriceList priceList)
 		{
-			return UpsertEntity(priceList, _productPriceListRepository, true);
+			try
+			{
+				var success = _productService.UpsertProductPrice(priceList);
+				if (!success)
+				{
+					return Json(new { success = false, message = "Problem while saving product price!" });
+				}
+
+				return Json(new { success = true, message = "Product price saved succesfully!" });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Problem while saving product price!" });
+			}
 		}
 
 		[HttpGet]
 		[Route("api/[controller]/linkImage")]
 		public IActionResult LinkImage(int productId, int imageId)
 		{
-			if (!_productRepository.IsStored(productId))
+			try
 			{
-				return Json(new { success = false, message = "Product not found in db!" });
-			}
-
-			if (!_imageRepository.IsStored(imageId))
-			{
-				return Json(new { success = false, message = "Image not found in db!" });
-			}
-
-			var productImage = _productImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
-			if (productImage == null)
-			{
-				var link = new ProductImage
+				var success = _productService.LinkImageToProduct(productId, imageId);
+				if (!success)
 				{
-					ProductId = productId,
-					ImageId = imageId
-				};
+					return Json(new { success = false, message = "Problem while linking image to product!" });
+				}
 
-				_productImageRepository.Add(link);
-				_productImageRepository.Save();
-
-				return Json(new { success = true, message = "Image succesfully linked to product." });
+				return Json(new { success = true, message = "Image linked succesfully!" });
 			}
-			else
+			catch (Exception ex)
 			{
-				return Json(new { success = true, message = "Image already linked." });
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Problem while linking image to product!" });
 			}
 		}
 
@@ -130,16 +121,20 @@ namespace Eshop.Api.Controllers
 		[Route("api/[controller]/unlinkImage")]
 		public IActionResult UnlinkImage(int productId, int imageId)
 		{
-			var productImage = _productImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
-			if (productImage == null)
+			try
 			{
-				return Json(new { success = true, message = "Image already unlinked." });
+				var success = _productService.UnlinkImageFromProduct(productId, imageId);
+				if (!success)
+				{
+					return Json(new { success = false, message = "Problem while unlinking image to product!" });
+				}
+
+				return Json(new { success = true, message = "Image unlinked succesfully!" });
 			}
-			else
+			catch (Exception ex)
 			{
-				_productImageRepository.Remove(productImage);
-				_productImageRepository.Save();
-				return Json(new { success = true, message = "Image unlinked." });
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Problem while unlinking image to product!" });
 			}
 		}
 
@@ -153,23 +148,21 @@ namespace Eshop.Api.Controllers
 				return error;
 			}
 
-			if (!_productRepository.IsStored(productCategory.ProductId))
+			try
 			{
-				return Json(new { success = false, message = "Product not found in db!" });
-			}
+				var success = _productService.AddProductToCategory(productCategory);
+				if (!success)
+				{
+					return Json(new { success = false, message = "Problem adding product to category!" });
+				}
 
-			if (!_categoryRepository.IsStored(productCategory.CategoryId))
+				return Json(new { success = true, message = "Product succesfully added to category!" });
+			}
+			catch (Exception ex)
 			{
-				return Json(new { success = false, message = "Category not found in db!" });
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Problem adding product to category!" });
 			}
-
-			if (_productCategoryRepository.IsStored(productCategory.Id))
-			{
-				return Json(new { success = false, message = "Category linked." });
-			}
-
-
-			return UpsertEntity(productCategory, _productCategoryRepository);
 		}
 	}
 }

@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Eshop.Api.BusinessLayer\Eshop.Api.BusinessLayer.csproj" />
     <ProjectReference Include="..\Eshop.Api.DataAccess\Eshop.Api.DataAccess.csproj" />
     <ProjectReference Include="..\Eshop.Api.Models\Eshop.Api.Models.csproj" />
   </ItemGroup>

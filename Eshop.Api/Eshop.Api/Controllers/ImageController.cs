@@ -1,4 +1,6 @@
-﻿using Eshop.Api.DataAccess.Repository.Interfaces;
+﻿using Eshop.Api.BusinessLayer.Services.Images;
+using Eshop.Api.BusinessLayer.Services.Interfaces.Images;
+using Eshop.Api.DataAccess.Repository.Interfaces;
 using Eshop.Api.Models.Images;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
@@ -8,38 +10,28 @@ namespace Eshop.Api.Controllers
 	[ApiController]
 	public class ImageController : EshopApiControllerBase
 	{
-		public IRepository<ImageGroup> _imageGroupRepository;
-		public IRepository<Image> _imageRepository;
+		private readonly IImageService _imageService;
+		private readonly ILogger<ImageController> _logger;
 
-		public ImageController(IRepository<ImageGroup> imageGroupRepository, IRepository<Image> imageRepository)
+		public ImageController(IImageService imageService, ILogger<ImageController> logger)
 		{
-			_imageGroupRepository = imageGroupRepository;
-			_imageRepository = imageRepository;
+			_imageService = imageService;
+			_logger = logger;
 		}
 
 		[HttpGet]
 		[Route("api/[controller]/listImageGroups")]
 		public IActionResult ListImageGroups()
 		{
-			var imageGroups = _imageGroupRepository.GetAll();
+			var imageGroups = _imageService.GetImageGroups();
 			return Json(new { imageGroups });
 		}
 
 		[HttpGet]
 		[Route("api/[controller]/listImages")]
-		public IActionResult ListImages(int offset = 0, int limit = 0)
+		public IActionResult ListImages(int offset = 0, int limit = 0, int imageGroupId = 0)
 		{
-			IEnumerable<Image> images = null;
-
-			if (limit > 0)
-			{
-				images = _imageRepository.GetAll(offset: offset, limit: limit);
-			}
-			else
-			{
-				images = _imageRepository.GetAll();
-			}
-
+			IEnumerable<Image> images = _imageService.GetImages(offset, limit, imageGroupId);
 			return Json(new { images });
 		}
 
@@ -47,14 +39,56 @@ namespace Eshop.Api.Controllers
 		[Route("api/[controller]/upsertImageGroup")]
 		public IActionResult UpsertImageGroup([FromBody] ImageGroup imageGroup)
 		{
-			return UpsertEntity(imageGroup, _imageGroupRepository, true);
+			var error = ValidateModel();
+			if (error != null)
+			{
+				return error;
+			}
+
+			try
+			{
+				var success = _imageService.UpsertImageGroup(imageGroup);
+				if (!success)
+				{
+					_logger.LogError("Problem saving image group!");
+					return Json(new { success = false, message = "Problem saving image group!" });
+				}
+
+				return Json(new { success = true, message = "Problem saving image group!" });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Problem saving image group!" });
+			}
 		}
 
 		[HttpPost]
 		[Route("api/[controller]/upsertImage")]
 		public IActionResult UpsertImage([FromBody] Image image)
 		{
-			return UpsertEntity(image, _imageRepository, true);
+			var error = ValidateModel();
+			if (error != null)
+			{
+				return error;
+			}
+
+			try
+			{
+				var success = _imageService.UpsertImage(image);
+				if (!success)
+				{
+					_logger.LogError("Problem saving image group!");
+					return Json(new { success = false, message = "Problem saving image group!" });
+				}
+
+				return Json(new { success = true, message = "Problem saving image group!" });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Problem saving image group!" });
+			}
 		}
 	}
 }

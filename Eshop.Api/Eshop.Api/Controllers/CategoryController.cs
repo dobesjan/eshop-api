@@ -1,4 +1,7 @@
-﻿using Eshop.Api.DataAccess.Repository.Interfaces;
+﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
+using Eshop.Api.DataAccess.Repository.Interfaces;
+using Eshop.Api.Models;
+using Eshop.Api.Models.Interfaces;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,18 +10,20 @@ namespace Eshop.Api.Controllers
 	[ApiController]
 	public class CategoryController : EshopApiControllerBase
 	{
-		public IRepository<Category> _categoryRepository;
+		private readonly ICategoryService _categoryService;
+		private readonly ILogger<CategoryController> _logger;
 
-		public CategoryController(IRepository<Category> categoryRepository)
+		public CategoryController(ICategoryService categoryService, ILogger<CategoryController> logger)
 		{
-			_categoryRepository = categoryRepository;
+			_categoryService = categoryService;
+			_logger = logger;
 		}
 
 		[HttpGet]
 		[Route("api/[controller]/list")]
 		public IActionResult ListCategories()
 		{
-			var categories = _categoryRepository.GetAll();
+			var categories = _categoryService.GetCategories();
 			return Json(new { categories });
 		}
 
@@ -26,25 +31,37 @@ namespace Eshop.Api.Controllers
 		[Route("api/[controller]/get")]
 		public IActionResult GetCategory(int id = 0)
 		{
-			if (id == 0)
+			try
 			{
-				return Json(new { success = false, message = "Category not found in db!" });
+				var category = _categoryService.GetCategory(id);
+				return Json(new { category });
 			}
-
-			var category = _categoryRepository.Get(c => c.Id == id, includeProperties: "ParentCategory");
-			if (category == null)
+			catch (InvalidDataException ex)
 			{
-				return Json(new { success = false, message = "Category not found in db!" });
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Category not found!" });
 			}
-
-			return Json(new { category });
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Unknown error!" });
+			}
 		}
 
 		[HttpPost]
 		[Route("api/[controller]/upsert")]
 		public IActionResult UpsertCategory([FromBody] Category category)
 		{
-			return UpsertEntity(category, _categoryRepository, true);
+			try
+			{
+				bool status = _categoryService.UpsertCategory(category);
+				return Json(new { success = true, message = "Category updated successfully" });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+				return Json(new { success = false, message = "Fail" });
+			}
 		}
 	}
 }

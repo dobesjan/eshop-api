@@ -1,3 +1,9 @@
+using Eshop.Api.BusinessLayer.Services;
+using Eshop.Api.BusinessLayer.Services.Images;
+using Eshop.Api.BusinessLayer.Services.Interfaces;
+using Eshop.Api.BusinessLayer.Services.Interfaces.Images;
+using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
+using Eshop.Api.BusinessLayer.Services.Products;
 using Eshop.Api.DataAccess.Data;
 using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Interfaces;
@@ -13,6 +19,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+builder.Services.AddScoped<IEshopService, EshopService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 var app = builder.Build();
 
