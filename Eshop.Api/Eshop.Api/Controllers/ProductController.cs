@@ -35,33 +35,7 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpGet]
-		[Route("api/[controller]/listCategories")]
-		public IActionResult ListCategories()
-		{
-			var categories = _categoryRepository.GetAll();
-			return Json(new { categories });
-		}
-
-		[HttpGet]
-		[Route("api/[controller]/getCategory")]
-		public IActionResult GetCategory(int id = 0)
-		{
-			if (id == 0)
-			{
-				return Json(new { success = false, message = "Category not found in db!" });
-			}
-
-			var category = _categoryRepository.Get(c => c.Id == id, includeProperties: "ParentCategory");
-			if (category == null)
-			{
-				return Json(new { success = false, message = "Category not found in db!" });
-			}
-
-			return Json(new { category });
-		}
-
-		[HttpGet]
-		[Route("api/[controller]/getProduct")]
+		[Route("api/[controller]/get")]
 		public IActionResult GetProduct(int id = 0)
 		{
 			if (id == 0)
@@ -79,7 +53,7 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpGet]
-		[Route("api/[controller]/listProducts")]
+		[Route("api/[controller]/list")]
 		public IActionResult ListProducts(int offset = 0, int limit = 0)
 		{
 			IEnumerable<Product> products = null;
@@ -100,14 +74,7 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpPost]
-		[Route("api/[controller]/upsertCategory")]
-		public IActionResult UpsertCategory([FromBody] Category category)
-		{
-			return UpsertEntity(category, _categoryRepository, true);
-		}
-
-		[HttpPost]
-		[Route("api/[controller]/upsertProduct")]
+		[Route("api/[controller]/upsert")]
 		public IActionResult UpsertProduct([FromBody] Product product)
 		{
 			return UpsertEntity(product, _productRepository, true);
