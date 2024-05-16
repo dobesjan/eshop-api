@@ -54,7 +54,7 @@ namespace Eshop.Api.Controllers
 
 		[HttpGet]
 		[Route("api/[controller]/list")]
-		public IActionResult ListProducts(int offset = 0, int limit = 0)
+		public IActionResult ListProducts(int offset = 0, int limit = 0, int categoryId = 0)
 		{
 			IEnumerable<Product> products = null;
 			var properties = "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency";
@@ -66,6 +66,11 @@ namespace Eshop.Api.Controllers
 			else
 			{
 				products = _productRepository.GetAll(includeProperties: properties);
+			}
+
+			if (categoryId > 0 && products != null)
+			{
+				products = products.Where(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId));
 			}
 
 			var data = products.Select(c => c.ToJson()).ToList();
