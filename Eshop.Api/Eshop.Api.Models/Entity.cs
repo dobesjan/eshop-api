@@ -17,5 +17,10 @@ namespace Eshop.Api.Models
 		{
 			throw new NotImplementedException();
 		}
+
+		public virtual bool IsValid()
+		{
+			return true;
+		}
 	}
 }

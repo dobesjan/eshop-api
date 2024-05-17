@@ -52,7 +52,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 
 			if (_productCategoryRepository.IsStored(category.Id))
 			{
-				throw new InvalidDataException("Category linked.");
+				return true;
 			}
 
 			return UpsertEntity(category, _productCategoryRepository);

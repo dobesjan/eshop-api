@@ -2,6 +2,8 @@
 using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Interfaces;
 using Eshop.Api.Models;
+using Eshop.Api.Models.Contacts;
+using Eshop.Api.Models.Orders;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -41,5 +43,20 @@ namespace Eshop.Api.BusinessLayer.Services
 				throw new ArgumentNullException($"{nameof(entity)} with id: {entity.Id} is null!");
 			}
 		}
+
+		/*
+		public bool LinkEntity<T, A, B>(T linkingEntity, int entityAId, int entityBId, IRepository<A> repositoryA, IRepository<B> repositoryB) where T : Entity where A : Entity where B : Entity
+		{
+			if (!repositoryA.IsStored(entityAId))
+			{
+				throw new InvalidDataException("Address not found in db!");
+			}
+
+			if (!repositoryB.IsStored(entityBId))
+			{
+				throw new InvalidDataException("Order not found in db!");
+			}
+		}
+		*/
 	}
 }

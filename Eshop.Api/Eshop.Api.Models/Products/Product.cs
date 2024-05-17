@@ -53,5 +53,24 @@ namespace Eshop.Api.Models.Products
 				Prices = ProductPrices != null && ProductPrices.Any() ? ProductPrices.ToList().Select(pr => new { Id = pr.Id, Cost = pr.Cost, CostWithTax = pr.CostWithTax, CostBefore = pr.CostBefore, Currency = pr.Currency }) : null
 			};
 		}
+
+		public double GetPrice(int currency, bool isWithTax = false)
+		{
+			if (ProductPrices != null)
+			{
+				var priceList = ProductPrices.FirstOrDefault(p => p.Currency.Id == currency);
+				if (priceList != null)
+				{
+					if (isWithTax)
+					{
+						return priceList.CostWithTax;
+					}
+
+					return priceList.Cost;
+				}
+			}
+
+			return 0;
+		}
 	}
 }
