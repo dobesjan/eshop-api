@@ -144,7 +144,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool SendOrder(Order order)
 		{
-			order.Validate();
+			if (order == null) throw new ArgumentNullException("Order is null");
+			order.IsReadyToSend();
 
 			if (!_ordersRepository.IsStored(order.Id))
 			{
@@ -168,12 +169,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool UpsertOrder(Order order)
 		{
+			if (order == null) throw new ArgumentNullException("Order is null");
 			CheckOrderIsStored(order.Id);
 			throw new NotImplementedException();
 		}
 
 		public bool UpdateOrderStatus(OrderStatus status, Order order)
 		{
+			if (order == null) throw new ArgumentNullException("Order is null");
 			CheckOrderIsStored(order.Id);
 
 			if (!_ordersStatusRepository.IsStored(status.Id)) 

@@ -67,7 +67,6 @@ namespace Eshop.Api.Models.Orders
 			return 0;
 		}
 
-		//TODO: Consider how to do validation in general
 		public override bool Validate()
 		{
 			if (UserId <= 0 || Token == String.Empty)
@@ -84,6 +83,20 @@ namespace Eshop.Api.Models.Orders
 			{
 				throw new InvalidDataException("There are not any products in order!");
 			}
+
+			return true;
+		}
+
+		public bool IsReadyToSend()
+		{
+			Validate();
+
+			if (Customer == null) throw new InvalidDataException("Customer data not filled");
+			if (Customer.Person == null) throw new InvalidDataException("Customer personal data not filled");
+			if (Customer.Address == null) throw new InvalidDataException("Customer address not filled");
+
+			Customer.Person.Validate();
+			Customer.Address.Validate();
 
 			return true;
 		}
