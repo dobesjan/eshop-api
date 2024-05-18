@@ -66,12 +66,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public IEnumerable<Order> GetOrders(int offset = 0, int limit = 0)
 		{
-			if (limit > 0)
-			{
-				return _ordersRepository.GetAll(includeProperties: _orderProperties, offset: offset, limit: limit);
-			}
-
-			return _ordersRepository.GetAll(includeProperties: _orderProperties);
+			return _ordersRepository.GetAll(includeProperties: _orderProperties, offset: offset, limit: limit);
 		}
 
 		public Order GetOrder(int orderId = 0)
@@ -230,24 +225,25 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
-		public bool RemoveProductFromOrder(OrderProduct product, int orderId)
+		public bool RemoveProductFromOrder(int productId, int orderId)
 		{
-			throw new NotImplementedException();
+			var product = _orderProductRepository.Get(p => p.ProductId == productId && p.OrderId == orderId);
+			if (product == null) throw new InvalidDataException("Product not found");
+
+			_orderProductRepository.Remove(product);
+
+			return true;
 		}
 
-		public bool RemoveProductsFromOrder(IEnumerable<OrderProduct> products, int orderId)
+		public bool UpdateProductCount(int productId, int count, int orderId)
 		{
-			throw new NotImplementedException();
-		}
+			var product = _orderProductRepository.Get(p => p.ProductId == productId && p.OrderId == orderId);
+			if (product == null) throw new InvalidDataException("Product not found");
 
-		public bool UpdateProductCount(OrderProduct product, int orderId)
-		{
-			throw new NotImplementedException();
-		}
+			product.Count = count;
+			_orderProductRepository.Update(product, true);
 
-		public bool UpdateProductsCount(IEnumerable<OrderProduct> products, int orderId)
-		{
-			throw new NotImplementedException();
+			return true;
 		}
 
 		public bool LinkCustomerContactToOrder(int orderId, Customer customer)
@@ -318,17 +314,97 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0)
 		{
-			throw new NotImplementedException();
+			return _ordersRepository.GetAll(o => o.OrderStatusId == orderStatusId, includeProperties: _orderProperties, offset: offset, limit: limit);
 		}
 
-		public IEnumerable<Order> GetOrdersByDeliveryAddress(int orderStatusId, int offset = 0, int limit = 0)
+		public IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0)
 		{
-			throw new NotImplementedException();
-		}
+			if (filter == null) throw new ArgumentNullException("Filter is null");
 
-		public IEnumerable<Order> GetOrdersByCustomerContact(int orderStatusId, int offset = 0, int limit = 0)
-		{
-			throw new NotImplementedException();
+			/*
+			return _ordersRepository.GetAll(
+				o => o.Id == filter.OrderId && o.OrderStatus.Name.Contains(filter.OrderStatus) && o.IsOrdered == filter.IsOrdered
+				&& o.CreatedDate >= filter.CreatedDateFrom && o.CreatedDate <= filter.CreatedDateTo && o.SentTime >= filter.SentTimeFrom
+				&& o.SentTime <= filter.SentTimeTo && o.DeliveryTime >= filter.DeliveryTimeFrom && o.DeliveryTime <= filter.DeliveryTimeTo
+				&& o.Shipping.Name.Contains(filter.Shipping) && o.Customer.Person.FirstName.Contains(filter.FirstName)
+				&& o.Customer.Person.LastName.Contains(filter.LastName) && o.Customer.Person.Email.Contains(filter.Email)
+				&& o.Customer.Person.PhoneNumber.Contains(filter.PhoneNumber) && o.Customer.Address.Street.Contains(filter.Street)
+				&& o.Customer.Address.City.Contains(filter.City) && o.Customer.Address.Country.Contains(filter.Country)
+				&& o.Customer.NewsletterAgree == filter.NewsletterAgree,
+				includeProperties: _orderProperties,
+				offset: offset,
+				limit: limit);
+			*/
+
+			var parameter = Expression.Parameter(typeof(Order), "o");
+			var expressions = new List<Expression>();
+
+			if (filter.OrderId.HasValue)
+				expressions.Add(Expression.Equal(Expression.Property(parameter, "Id"), Expression.Constant(filter.OrderId.Value)));
+
+			if (!string.IsNullOrEmpty(filter.OrderStatus))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(parameter, "OrderStatus"), "Name"), "Contains", null, Expression.Constant(filter.OrderStatus)));
+
+			if (filter.IsOrdered.HasValue)
+				expressions.Add(Expression.Equal(Expression.Property(parameter, "IsOrdered"), Expression.Constant(filter.IsOrdered.Value)));
+
+			if (filter.CreatedDateFrom.HasValue)
+				expressions.Add(Expression.GreaterThanOrEqual(Expression.Property(parameter, "CreatedDate"), Expression.Constant(filter.CreatedDateFrom.Value)));
+
+			if (filter.CreatedDateTo.HasValue)
+				expressions.Add(Expression.LessThanOrEqual(Expression.Property(parameter, "CreatedDate"), Expression.Constant(filter.CreatedDateTo.Value)));
+
+			if (filter.SentTimeFrom.HasValue)
+				expressions.Add(Expression.GreaterThanOrEqual(Expression.Property(parameter, "SentTime"), Expression.Constant(filter.SentTimeFrom.Value)));
+
+			if (filter.SentTimeTo.HasValue)
+				expressions.Add(Expression.LessThanOrEqual(Expression.Property(parameter, "SentTime"), Expression.Constant(filter.SentTimeTo.Value)));
+
+			if (filter.DeliveryTimeFrom.HasValue)
+				expressions.Add(Expression.GreaterThanOrEqual(Expression.Property(parameter, "DeliveryTime"), Expression.Constant(filter.DeliveryTimeFrom.Value)));
+
+			if (filter.DeliveryTimeTo.HasValue)
+				expressions.Add(Expression.LessThanOrEqual(Expression.Property(parameter, "DeliveryTime"), Expression.Constant(filter.DeliveryTimeTo.Value)));
+
+			if (!string.IsNullOrEmpty(filter.Shipping))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(parameter, "Shipping"), "Name"), "Contains", null, Expression.Constant(filter.Shipping)));
+
+			if (!string.IsNullOrEmpty(filter.FirstName))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(Expression.Property(parameter, "Customer"), "Person"), "FirstName"), "Contains", null, Expression.Constant(filter.FirstName)));
+
+			if (!string.IsNullOrEmpty(filter.LastName))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(Expression.Property(parameter, "Customer"), "Person"), "LastName"), "Contains", null, Expression.Constant(filter.LastName)));
+
+			if (!string.IsNullOrEmpty(filter.Email))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(Expression.Property(parameter, "Customer"), "Person"), "Email"), "Contains", null, Expression.Constant(filter.Email)));
+
+			if (!string.IsNullOrEmpty(filter.PhoneNumber))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(Expression.Property(parameter, "Customer"), "Person"), "PhoneNumber"), "Contains", null, Expression.Constant(filter.PhoneNumber)));
+
+			if (!string.IsNullOrEmpty(filter.Street))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(Expression.Property(parameter, "Customer"), "Address"), "Street"), "Contains", null, Expression.Constant(filter.Street)));
+
+			if (!string.IsNullOrEmpty(filter.City))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(Expression.Property(parameter, "Customer"), "Address"), "City"), "Contains", null, Expression.Constant(filter.City)));
+
+			if (!string.IsNullOrEmpty(filter.PostalCode))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(Expression.Property(parameter, "Customer"), "Address"), "PostalCode"), "Contains", null, Expression.Constant(filter.PostalCode)));
+
+			if (!string.IsNullOrEmpty(filter.Country))
+				expressions.Add(Expression.Call(Expression.Property(Expression.Property(Expression.Property(parameter, "Customer"), "Address"), "Country"), "Contains", null, Expression.Constant(filter.Country)));
+
+			if (filter.NewsletterAgree.HasValue)
+				expressions.Add(Expression.Equal(Expression.Property(Expression.Property(parameter, "Customer"), "NewsletterAgree"), Expression.Constant(filter.NewsletterAgree.Value)));
+
+			if (!expressions.Any())
+			{
+				throw new ArgumentException("No filter criteria provided.");
+			}
+
+			var body = expressions.Aggregate(Expression.AndAlso);
+			var predicate = Expression.Lambda<Func<Order, bool>>(body, parameter);
+
+			return _ordersRepository.GetAll(predicate, _orderProperties, offset, limit);
 		}
 	}
 }

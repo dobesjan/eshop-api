@@ -1,6 +1,7 @@
 ﻿using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
 using Eshop.Api.Models.Products;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,10 +21,8 @@ namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
 
 		bool AddProductToOrder(OrderProduct product);
 		bool AddProductsToOrder(IEnumerable<OrderProduct> products);
-		bool RemoveProductFromOrder(OrderProduct product, int orderId);
-		bool RemoveProductsFromOrder(IEnumerable<OrderProduct> products, int orderId);
-		bool UpdateProductCount(OrderProduct product, int orderId);
-		bool UpdateProductsCount(IEnumerable<OrderProduct> products, int orderId);
+		bool RemoveProductFromOrder(int productId, int orderId);
+		bool UpdateProductCount(int productId, int count, int orderId);
 
 		bool LinkCustomerContactToOrder(int orderId, Customer customer);
 		bool LinkDeliveryAddressToOrder(int orderId, Address address);
@@ -35,8 +34,7 @@ namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
 		IEnumerable<Order> GetOrders(int offset = 0, int limit = 0);
 		IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0);
 		IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0);
-		IEnumerable<Order> GetOrdersByDeliveryAddress(int orderStatusId, int offset = 0, int limit = 0);
-		IEnumerable<Order> GetOrdersByCustomerContact(int orderStatusId, int offset = 0, int limit = 0);
+		IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0);
 		IEnumerable<Order> GetOrdersForUser(int userId = 0);
 		IEnumerable<Order> GetOrdersForAnonymousUser(string token = "");
 	}
