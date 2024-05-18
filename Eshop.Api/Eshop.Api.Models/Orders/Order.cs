@@ -68,12 +68,22 @@ namespace Eshop.Api.Models.Orders
 		}
 
 		//TODO: Consider how to do validation in general
-		public override bool IsValid()
+		public override bool Validate()
 		{
-			if (UserId <= 0 || Token == String.Empty) return false;
-			if (OrderProducts == null) return false;
-			if (!OrderProducts.Any()) return false;
-			if (Customer == null) return false;
+			if (UserId <= 0 || Token == String.Empty)
+			{
+				throw new InvalidDataException("UserId or token not provided!");
+			}
+
+			if (OrderProducts == null)
+			{
+				throw new InvalidDataException("There are not any products in order!");
+			}
+
+			if (OrderProducts.Any())
+			{
+				throw new InvalidDataException("There are not any products in order!");
+			}
 
 			return true;
 		}

@@ -47,24 +47,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			_customerRepository = customerRepository;
 		}
 
-		private static void ValidateOrder(Order order)
-		{
-			if (order.UserId <= 0 || order.Token == String.Empty)
-			{
-				throw new InvalidDataException("UserId or token not provided!");
-			}
-
-			if (order.OrderProducts == null)
-			{
-				throw new InvalidDataException("There are not any products in order!");
-			}
-
-			if (order.OrderProducts.Any())
-			{
-				throw new InvalidDataException("There are not any products in order!");
-			}
-		}
-
 		private void CheckOrderIsStored(int orderId)
 		{
 			if (!_ordersRepository.IsStored(orderId))
@@ -75,7 +57,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool CreateOrder(Order order)
 		{
-			ValidateOrder(order);
+			if (order == null) throw new ArgumentNullException("Order is null");
+			order.Validate();
 
 			_ordersRepository.Add(order);
 			return true;
@@ -166,10 +149,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool SendOrder(Order order)
 		{
-			if (!order.IsValid())
-			{
-				throw new InvalidDataException("Order is not valid!");
-			}
+			order.Validate();
 
 			if (!_ordersRepository.IsStored(order.Id))
 			{
@@ -185,7 +165,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool UpdateOrder(Order order)
 		{
-			ValidateOrder(order);
+			if (order == null) throw new ArgumentNullException("Order is null");
+			order.Validate();
 
 			return UpsertEntity(order, _ordersRepository);
 		}
@@ -215,9 +196,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		public bool AddProductToOrder(OrderProduct product)
 		{
 			if (product == null) throw new ArgumentNullException("Order product is null");
-			if (product.ProductId <= 0) throw new InvalidDataException("Wrong value for productId");
-			if (product.OrderId <= 0) throw new InvalidDataException("Wrong value for orderId");
-			if (product.Count <= 0) throw new InvalidDataException("Wrong value for count");
+			product.Validate();
 
 			CheckOrderIsStored(product.OrderId);
 
@@ -278,15 +257,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (customer.Person == null) throw new ArgumentNullException("Person is null");
 			if (customer.Address == null) throw new ArgumentNullException("Address is null");
 
-			if (customer.Person.FirstName == String.Empty) throw new InvalidDataException("First name not provided");
-			if (customer.Person.LastName == String.Empty) throw new InvalidDataException("Last name not provided");
-			if (customer.Person.Email == String.Empty) throw new InvalidDataException("Email name not provided");
-			if (customer.Person.PhoneNumber == String.Empty) throw new InvalidDataException("Phone number name not provided");
-
-			if (customer.Address.Street == String.Empty) throw new InvalidDataException("Street not provided");
-			if (customer.Address.City == String.Empty) throw new InvalidDataException("City not provided");
-			if (customer.Address.PostalCode == String.Empty) throw new InvalidDataException("Postal code not provided");
-			if (customer.Address.Country == String.Empty) throw new InvalidDataException("Country not provided");
+			customer.Person.Validate();
+			customer.Address.Validate();
 
 			var person = _personRepository.Add(customer.Person, true);
 			var address = _addressRepository.Add(customer.Address, true);

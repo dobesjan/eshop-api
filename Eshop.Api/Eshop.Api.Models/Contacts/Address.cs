@@ -31,5 +31,15 @@ namespace Eshop.Api.Models.Contacts
 
 		[Required]
 		public string Country { get; set; }
+
+		public override bool Validate()
+		{
+			if (Street == String.Empty) throw new InvalidDataException("Street not provided");
+			if (City == String.Empty) throw new InvalidDataException("City not provided");
+			if (PostalCode == String.Empty) throw new InvalidDataException("Postal code not provided");
+			if (Country == String.Empty) throw new InvalidDataException("Country not provided");
+
+			return true;
+		}
 	}
 }
