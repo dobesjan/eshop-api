@@ -15,8 +15,6 @@ namespace Eshop.Api.Models.Orders
 
 		public bool Enabled { get; set; }
 
-		public List<OrderShipping> OrderShipping { get; set; }
-
 		public List<ShippingPaymentMethod> ShippingPaymentMethod { get; set; }
 	}
 }

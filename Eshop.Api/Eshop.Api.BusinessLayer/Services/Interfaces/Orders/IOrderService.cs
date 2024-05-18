@@ -18,14 +18,14 @@ namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
 		bool UpdateOrderStatus(OrderStatus status, Order order);
 		bool SendOrder(Order order);
 
-		bool AddProductToOrder(OrderProduct product, int orderId);
-		bool AddProductsToOrder(IEnumerable<OrderProduct> products, int orderId);
+		bool AddProductToOrder(OrderProduct product);
+		bool AddProductsToOrder(IEnumerable<OrderProduct> products);
 		bool RemoveProductFromOrder(OrderProduct product, int orderId);
 		bool RemoveProductsFromOrder(IEnumerable<OrderProduct> products, int orderId);
 		bool UpdateProductCount(OrderProduct product, int orderId);
 		bool UpdateProductsCount(IEnumerable<OrderProduct> products, int orderId);
 
-		bool LinkCustomerContactToOrder(int orderId, int contactId);
+		bool LinkCustomerContactToOrder(int orderId, Customer customer);
 		bool LinkDeliveryAddressToOrder(int orderId, Address address);
 
 		bool AddOrderPayment(Payment payment);

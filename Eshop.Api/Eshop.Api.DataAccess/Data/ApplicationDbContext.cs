@@ -22,9 +22,7 @@ namespace Eshop.Api.DataAccess.Data
 		public DbSet<ProductPriceList> ProductPrices { get; set; }
 
 		public DbSet<Order> Orders { get; set; }
-		public DbSet<OrderShipping> OrderShippings { get; set; }
 		public DbSet<OrderProduct> OrderProducts { get; set; }
-		public DbSet<OrderCustomer> CustomerOrders { get; set; }
 		public DbSet<OrderStatus> OrderStatus { get; set; }
 		public DbSet<Payment> Payments { get; set; }
 		public DbSet<PaymentStatus> PaymentStatuses { get; set; }
@@ -87,32 +85,6 @@ namespace Eshop.Api.DataAccess.Data
 			modelBuilder.Entity<OrderProduct>()
 				.HasOne(pc => pc.Order)
 				.WithMany(c => c.OrderProducts)
-				.HasForeignKey(pc => pc.OrderId);
-
-			modelBuilder.Entity<OrderShipping>()
-				.HasKey(pc => new { pc.ShippingId, pc.OrderId });
-
-			modelBuilder.Entity<OrderShipping>()
-				.HasOne(pc => pc.Shipping)
-				.WithMany(p => p.OrderShipping)
-				.HasForeignKey(pc => pc.ShippingId);
-
-			modelBuilder.Entity<OrderShipping>()
-				.HasOne(pc => pc.Order)
-				.WithMany(c => c.OrderShipping)
-				.HasForeignKey(pc => pc.OrderId);
-
-			modelBuilder.Entity<OrderCustomer>()
-				.HasKey(pc => new { pc.CustomerId, pc.OrderId });
-
-			modelBuilder.Entity<OrderCustomer>()
-				.HasOne(pc => pc.Customer)
-				.WithMany(p => p.CustomerContacts)
-				.HasForeignKey(pc => pc.CustomerId);
-
-			modelBuilder.Entity<OrderCustomer>()
-				.HasOne(pc => pc.Order)
-				.WithMany(c => c.CustomerContacts)
 				.HasForeignKey(pc => pc.OrderId);
 
 			modelBuilder.Entity<ShippingPaymentMethod>()

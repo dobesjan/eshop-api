@@ -21,6 +21,8 @@ namespace Eshop.Api.Controllers
 			_logger = logger;
 		}
 
+		//TODO: Refactor these exceptions - try to merge it one generic method
+
 		[HttpGet]
 		[Route("api/[controller]/get")]
 		public IActionResult GetProduct(int id = 0)

@@ -31,10 +31,17 @@ namespace Eshop.Api.Models.Orders
 
 		public List<OrderProduct> OrderProducts { get; set; }
 
-		public List<OrderShipping> OrderShipping { get; set; }
+		public int ShippingId { get; set; }
 
-		//TODO: Consider if we need multiple customers for one order
-		public List<OrderCustomer> CustomerContacts { get; set; }
+		[ForeignKey(nameof(ShippingId))]
+		[ValidateNever]
+		public Shipping Shipping { get; set; }
+
+		public int CustomerId { get; set; }
+
+		[ForeignKey(nameof(CustomerId))]
+		[ValidateNever]
+		public Customer Customer { get; set; }
 
 		public int AddressId { get; set; }
 
@@ -60,13 +67,13 @@ namespace Eshop.Api.Models.Orders
 			return 0;
 		}
 
+		//TODO: Consider how to do validation in general
 		public override bool IsValid()
 		{
 			if (UserId <= 0 || Token == String.Empty) return false;
 			if (OrderProducts == null) return false;
 			if (!OrderProducts.Any()) return false;
-			if (CustomerContacts == null) return false;
-			if (!CustomerContacts.Any()) return false;
+			if (Customer == null) return false;
 
 			return true;
 		}

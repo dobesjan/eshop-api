@@ -23,14 +23,28 @@ namespace Eshop.Api.DataAccess.Repository
 			this.dbset = _db.Set<T>();
 		}
 
-		public void Add(T entity)
+		public T Add(T entity, bool save = false)
 		{
 			dbset.Add(entity);
+
+			if (save)
+			{
+				Save();
+			}
+
+			return entity;
 		}
 
-		public void Update(T entity)
+		public T Update(T entity, bool save = false)
 		{
 			dbset.Update(entity);
+
+			if (save)
+			{
+				Save();
+			}
+
+			return entity;
 		}
 
 		public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
