@@ -28,8 +28,8 @@ namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
 		bool LinkCustomerContactToOrder(int orderId, int contactId);
 		bool LinkDeliveryAddressToOrder(int orderId, Address address);
 
-		bool AddOrderPayment(Payment payment, int orderId);
-		bool UpdateOrderPayment(Payment payment, int orderId);
+		bool AddOrderPayment(Payment payment);
+		bool UpdateOrderPayment(Payment payment);
 
 		Order GetOrder(int orderId = 0);
 		IEnumerable<Order> GetOrders(int offset = 0, int limit = 0);

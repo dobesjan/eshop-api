@@ -32,14 +32,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,OrderShipping.Shipping,CustomerContacts.Customer,DeliveryAddress";
 
-		public bool CreateOrder(Order order)
-		{
-			ValidateOrder(order);
-
-			_ordersRepository.Add(order);
-			return true;
-		}
-
 		private static void ValidateOrder(Order order)
 		{
 			if (order.UserId <= 0 || order.Token == String.Empty)
@@ -56,6 +48,22 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			{
 				throw new InvalidDataException("There are not any products in order!");
 			}
+		}
+
+		private void CheckOrderIsStored(int orderId)
+		{
+			if (!_ordersRepository.IsStored(orderId))
+			{
+				throw new InvalidDataException("Order not found in db!");
+			}
+		}
+
+		public bool CreateOrder(Order order)
+		{
+			ValidateOrder(order);
+
+			_ordersRepository.Add(order);
+			return true;
 		}
 
 		public IEnumerable<Order> GetOrders(int offset = 0, int limit = 0)
@@ -164,12 +172,12 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		{
 			ValidateOrder(order);
 
-			_ordersRepository.Update(order);
-			return true;
+			return UpsertEntity(order, _ordersRepository);
 		}
 
 		public bool UpsertOrder(Order order)
 		{
+			CheckOrderIsStored(order.Id);
 			throw new NotImplementedException();
 		}
 
@@ -215,10 +223,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Customer not found in db!");
 			}
 
-			if (!_ordersRepository.IsStored(orderId))
-			{
-				throw new InvalidDataException("Order not found in db!");
-			}
+			CheckOrderIsStored(orderId);
 
 			var link = _orderCustomerRepository.Get(pi => pi.OrderId == orderId && pi.CustomerId == contactId);
 			if (link == null)
@@ -236,14 +241,22 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
-		public bool AddOrderPayment(Payment payment, int orderId)
+		public bool AddOrderPayment(Payment payment)
 		{
-			throw new NotImplementedException();
+			CheckOrderIsStored(payment.OrderId);
+			_paymentRepository.Add(payment);
+			_paymentRepository.Save();
+
+			return true;
 		}
 
-		public bool UpdateOrderPayment(Payment payment, int orderId)
+		public bool UpdateOrderPayment(Payment payment)
 		{
-			throw new NotImplementedException();
+			CheckOrderIsStored(payment.OrderId);
+			_paymentRepository.Update(payment);
+			_paymentRepository.Save();
+
+			return true;
 		}
 
 		public IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0)
