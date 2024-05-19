@@ -7,6 +7,13 @@ namespace Eshop.Api.Controllers
 {
 	public class EshopApiControllerBase : Controller
 	{
+		protected readonly ILogger _logger;
+
+		public EshopApiControllerBase(ILogger logger)
+		{
+			_logger = logger;
+		}
+
 		protected IActionResult ValidateModel()
 		{
 			if (!ModelState.IsValid)
@@ -16,6 +23,19 @@ namespace Eshop.Api.Controllers
 			}
 
 			return null;
+		}
+
+		protected IActionResult HandleResponse(Func<IActionResult> action, string errorMessage)
+		{
+			try
+			{
+				return action();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, errorMessage);
+				return Json(new { success = false, message = errorMessage });
+			}
 		}
 	}
 }

@@ -49,7 +49,7 @@ namespace Eshop.Api.Models.Orders
 		[ValidateNever]
 		public Address DeliveryAddress { get; set; }
 
-		[InverseProperty(nameof(Payment))]
+		[InverseProperty(nameof(Order))]
 		public Payment? Payment { get; set; }
 
 		//DateTime when first products were put to cart

@@ -10,161 +10,85 @@ using static System.Net.Mime.MediaTypeNames;
 namespace Eshop.Api.Controllers
 {
 	[ApiController]
+	[Route("api/[controller]")]
 	public class ProductController : EshopApiControllerBase
 	{
-		private IProductService _productService;
-		private readonly ILogger _logger;
+		private readonly IProductService _productService;
 
-		public ProductController(IProductService productService, ILogger<ProductController> logger) 
+		public ProductController(IProductService productService, ILogger<ProductController> logger) : base(logger)
 		{
 			_productService = productService;
-			_logger = logger;
 		}
 
-		//TODO: Refactor these exceptions - try to merge it one generic method
-
-		[HttpGet]
-		[Route("api/[controller]/get")]
+		[HttpGet("get")]
 		public IActionResult GetProduct(int id = 0)
 		{
-			try
+			return HandleResponse(() =>
 			{
 				var product = _productService.GetProduct(id);
 				return Json(new { data = product.ToJson() });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return Json(new { success = false, message = "Product not found!" });
-			}
+			}, "Product not found!");
 		}
 
-		[HttpGet]
-		[Route("api/[controller]/list")]
+		[HttpGet("list")]
 		public IActionResult ListProducts(int offset = 0, int limit = 0, int categoryId = 0)
 		{
-			try
+			return HandleResponse(() =>
 			{
 				var products = _productService.GetProducts(offset, limit, categoryId);
 				var data = products.Select(c => c.ToJson()).ToList();
 				return Json(new { products = data });
-			}
-			catch(Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return Json(new { success = false, message = "Problem while retrieving products!" });
-			}
+			}, "Problem while retrieving products!");
 		}
 
-		[HttpPost]
-		[Route("api/[controller]/upsert")]
+		[HttpPost("upsert")]
 		public IActionResult UpsertProduct([FromBody] Product product)
 		{
-			try
+			return HandleResponse(() =>
 			{
-				var success =  _productService.UpsertProduct(product);
-				if (!success)
-				{
-					return Json(new { success = false, message = "Problem while saving product!" });
-				}
-
-				return Json(new { success = true, message = "Product saved succesfully!" });
-			}
-			catch(Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return Json(new { success = false, message = "Problem while saving product!" });
-			}
+				var success = _productService.UpsertProduct(product);
+				return Json(new { success, message = success ? "Product saved successfully!" : "Problem while saving product!" });
+			}, "Problem while saving product!");
 		}
 
-		[HttpPost]
-		[Route("api/[controller]/upsertProductPrice")]
+		[HttpPost("upsertProductPrice")]
 		public IActionResult UpsertProductPrice([FromBody] ProductPriceList priceList)
 		{
-			try
+			return HandleResponse(() =>
 			{
 				var success = _productService.UpsertProductPrice(priceList);
-				if (!success)
-				{
-					return Json(new { success = false, message = "Problem while saving product price!" });
-				}
-
-				return Json(new { success = true, message = "Product price saved succesfully!" });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return Json(new { success = false, message = "Problem while saving product price!" });
-			}
+				return Json(new { success, message = success ? "Product price saved successfully!" : "Problem while saving product price!" });
+			}, "Problem while saving product price!");
 		}
 
-		[HttpGet]
-		[Route("api/[controller]/linkImage")]
+		[HttpGet("linkImage")]
 		public IActionResult LinkImage(int productId, int imageId)
 		{
-			try
+			return HandleResponse(() =>
 			{
 				var success = _productService.LinkImageToProduct(productId, imageId);
-				if (!success)
-				{
-					return Json(new { success = false, message = "Problem while linking image to product!" });
-				}
-
-				return Json(new { success = true, message = "Image linked succesfully!" });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return Json(new { success = false, message = "Problem while linking image to product!" });
-			}
+				return Json(new { success, message = success ? "Image linked successfully!" : "Problem while linking image to product!" });
+			}, "Problem while linking image to product!");
 		}
 
-		[HttpGet]
-		[Route("api/[controller]/unlinkImage")]
+		[HttpGet("unlinkImage")]
 		public IActionResult UnlinkImage(int productId, int imageId)
 		{
-			try
+			return HandleResponse(() =>
 			{
 				var success = _productService.UnlinkImageFromProduct(productId, imageId);
-				if (!success)
-				{
-					return Json(new { success = false, message = "Problem while unlinking image to product!" });
-				}
-
-				return Json(new { success = true, message = "Image unlinked succesfully!" });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return Json(new { success = false, message = "Problem while unlinking image to product!" });
-			}
+				return Json(new { success, message = success ? "Image unlinked successfully!" : "Problem while unlinking image from product!" });
+			}, "Problem while unlinking image from product!");
 		}
 
-		[HttpPost]
-		[Route("api/[controller]/addProductToCategory")]
+		[HttpPost("addProductToCategory")]
 		public IActionResult AddProductToCategory([FromBody] ProductCategory productCategory)
 		{
-			var error = ValidateModel();
-			if (error != null)
-			{
-				return error;
-			}
-
-			try
+			return HandleResponse(() =>
 			{
 				var success = _productService.AddProductToCategory(productCategory);
-				if (!success)
-				{
-					return Json(new { success = false, message = "Problem adding product to category!" });
-				}
-
-				return Json(new { success = true, message = "Product succesfully added to category!" });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return Json(new { success = false, message = "Problem adding product to category!" });
-			}
+				return Json(new { success, message = success ? "Product added to category successfully!" : "Problem while adding product to category!" });
+			}, "Problem while adding product to category!");
 		}
 	}
 }
