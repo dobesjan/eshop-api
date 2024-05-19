@@ -1,5 +1,6 @@
 ﻿using Eshop.Api.Models.Interfaces;
 using Eshop.Api.Models.Products;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,9 +15,11 @@ namespace Eshop.Api.Models.Orders
 	public class OrderProduct : Entity
 	{
 		public int ProductId { get; set; }
+		[ValidateNever]
 		public Product Product { get; set; }
 
 		public int OrderId { get; set; }
+		[ValidateNever]
 		public Order Order { get; set; }
 
 		public int Count { get; set; }
