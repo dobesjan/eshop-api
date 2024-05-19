@@ -49,6 +49,9 @@ namespace Eshop.Api.Models.Orders
 		[ValidateNever]
 		public Address DeliveryAddress { get; set; }
 
+		[InverseProperty(nameof(Payment))]
+		public Payment? Payment { get; set; }
+
 		//DateTime when first products were put to cart
 		public DateTime Created { get; set; }
 

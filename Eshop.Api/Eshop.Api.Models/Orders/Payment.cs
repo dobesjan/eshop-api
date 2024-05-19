@@ -24,6 +24,12 @@ namespace Eshop.Api.Models.Orders
 		[ValidateNever]
 		public PaymentStatus PaymentStatus { get; set; }
 
+		public int PaymentMethodId { get; set; }
+
+		[ForeignKey(nameof(PaymentMethodId))]
+		[ValidateNever]
+		public PaymentMethod PaymentMethod { get; set; }
+
 		public int Cost { get; set; }
 		public int CostWithTax { get; set; }
 	}

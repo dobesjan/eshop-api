@@ -30,7 +30,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		private readonly IRepository<Person> _personRepository;
 		private readonly IRepository<Customer> _customerRepository;
 
-		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,Shipping,Customer,DeliveryAddress";
+		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,Shipping,Customer,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod";
 
 		public OrderService(IRepository<Order> ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository)
 		{
@@ -47,6 +47,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			_customerRepository = customerRepository;
 		}
 
+		#region Order
 		private void CheckOrderIsStored(int orderId)
 		{
 			if (!_ordersRepository.IsStored(orderId))
@@ -116,32 +117,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			return orders;
 		}
-
-		public bool LinkDeliveryAddressToOrder(int orderId, Address address)
-		{
-			var order = _ordersRepository.Get(pi => pi.Id == orderId);
-			
-			if (order == null)
-			{
-				throw new InvalidDataException("Order not found in db!");
-			}
-
-			if (UpsertEntity(address, _addressRepository))
-			{
-				var addressId = _addressRepository.Get(a => a.City == address.City && a.Street == address.Street && a.Country == address.Country)?.Id;
-
-				if (!addressId.HasValue)
-				{
-					throw new InvalidDataException("Address not found in db!");
-				}
-
-				order.AddressId = addressId.Value;
-				return true;
-			}
-
-			throw new InvalidDataException("Error!");
-		}
-
 		public bool SendOrder(Order order)
 		{
 			if (order == null) throw new ArgumentNullException("Order is null");
@@ -179,7 +154,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (order == null) throw new ArgumentNullException("Order is null");
 			CheckOrderIsStored(order.Id);
 
-			if (!_ordersStatusRepository.IsStored(status.Id)) 
+			if (!_ordersStatusRepository.IsStored(status.Id))
 			{
 				throw new InvalidDataException("Wrong order status");
 			}
@@ -191,6 +166,67 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
+		public IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0)
+		{
+			return _ordersRepository.GetAll(o => o.OrderStatusId == orderStatusId, includeProperties: _orderProperties, offset: offset, limit: limit);
+		}
+
+		#endregion
+
+		#region Contacts
+		public bool LinkDeliveryAddressToOrder(int orderId, Address address)
+		{
+			var order = _ordersRepository.Get(pi => pi.Id == orderId);
+			
+			if (order == null)
+			{
+				throw new InvalidDataException("Order not found in db!");
+			}
+
+			if (UpsertEntity(address, _addressRepository))
+			{
+				var addressId = _addressRepository.Get(a => a.City == address.City && a.Street == address.Street && a.Country == address.Country)?.Id;
+
+				if (!addressId.HasValue)
+				{
+					throw new InvalidDataException("Address not found in db!");
+				}
+
+				order.AddressId = addressId.Value;
+				_ordersRepository.Update(order, true);
+
+				return true;
+			}
+
+			throw new InvalidDataException("Error!");
+		}
+
+		public bool LinkCustomerContactToOrder(int orderId, Customer customer)
+		{
+			//TODO: Consider split - maybe to repository
+			if (customer == null) throw new ArgumentNullException("Customer is null");
+			if (customer.Person == null) throw new ArgumentNullException("Person is null");
+			if (customer.Address == null) throw new ArgumentNullException("Address is null");
+
+			customer.Person.Validate();
+			customer.Address.Validate();
+
+			var person = _personRepository.Add(customer.Person, true);
+			var address = _addressRepository.Add(customer.Address, true);
+			var newCustomer = new Customer
+			{
+				PersonId = person.Id,
+				AddressId = address.Id,
+			};
+
+			_customerRepository.Add(newCustomer, true);
+
+			return true;
+		}
+
+		#endregion
+
+		#region Products
 		public bool AddProductToOrder(OrderProduct product)
 		{
 			if (product == null) throw new ArgumentNullException("Order product is null");
@@ -206,11 +242,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				relation.OrderId = product.OrderId;
 				relation.Count = product.Count;
 
-				_orderProductRepository.Update(relation);
+				_orderProductRepository.Update(relation, true);
 			}
 			else
 			{
-				_orderProductRepository.Add(product);
+				_orderProductRepository.Add(product, true);
 			}
 
 			return true;
@@ -234,6 +270,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (product == null) throw new InvalidDataException("Product not found");
 
 			_orderProductRepository.Remove(product);
+			_orderProductRepository.Save();
 
 			return true;
 		}
@@ -249,29 +286,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
-		public bool LinkCustomerContactToOrder(int orderId, Customer customer)
-		{
-			//TODO: Consider split - maybe to repository
-			if (customer == null) throw new ArgumentNullException("Customer is null");
-			if (customer.Person == null) throw new ArgumentNullException("Person is null");
-			if (customer.Address == null) throw new ArgumentNullException("Address is null");
+		#endregion
 
-			customer.Person.Validate();
-			customer.Address.Validate();
-
-			var person = _personRepository.Add(customer.Person, true);
-			var address = _addressRepository.Add(customer.Address, true);
-			var newCustomer = new Customer
-			{
-				PersonId = person.Id,
-				AddressId = address.Id,
-			};
-			
-			_customerRepository.Add(newCustomer, true);
-
-			return true;
-		}
-
+		#region Payment
 		public bool AddOrderPayment(Payment payment)
 		{
 			CheckOrderIsStored(payment.OrderId);
@@ -284,11 +301,16 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		public bool UpdateOrderPayment(Payment payment)
 		{
 			CheckOrderIsStored(payment.OrderId);
+			if (_paymentRepository.IsStored(payment.OrderId))
 			_paymentRepository.Update(payment);
 			_paymentRepository.Save();
 
 			return true;
 		}
+
+		#endregion
+
+		#region Shipping
 
 		public IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0)
 		{
@@ -315,11 +337,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return orders;
 		}
 
-		public IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0)
-		{
-			return _ordersRepository.GetAll(o => o.OrderStatusId == orderStatusId, includeProperties: _orderProperties, offset: offset, limit: limit);
-		}
+		#endregion
 
+		#region Filtering
 		public IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0)
 		{
 			if (filter == null) throw new ArgumentNullException("Filter is null");
@@ -409,5 +429,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			return _ordersRepository.GetAll(predicate, _orderProperties, offset, limit);
 		}
+
+		#endregion
 	}
 }
