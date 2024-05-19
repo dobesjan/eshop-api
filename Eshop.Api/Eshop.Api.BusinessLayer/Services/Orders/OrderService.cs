@@ -289,9 +289,17 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		#endregion
 
 		#region Payment
+		private void CheckIfShippingSupportsPaymentMethod(int paymentId, int orderId)
+		{
+			var order = GetOrder(orderId);
+			var shipping = _shippingRepository.Get(s => s.Id == order.ShippingId && s.Enabled == true && s.ShippingPaymentMethod != null && s.ShippingPaymentMethod.Exists(sp => sp.PaymentMethodId == paymentId), includeProperties: "ShippingPaymentMethod.PaymentMethod");
+			if (shipping != null) throw new InvalidDataException("Payment not supported in provided shipping");
+		}
+
 		public bool AddOrderPayment(Payment payment)
 		{
-			CheckOrderIsStored(payment.OrderId);
+			CheckIfShippingSupportsPaymentMethod(payment.Id, payment.OrderId);
+
 			_paymentRepository.Add(payment);
 			_paymentRepository.Save();
 
@@ -300,6 +308,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool UpdateOrderPayment(Payment payment)
 		{
+			CheckIfShippingSupportsPaymentMethod(payment.Id, payment.OrderId);
+
 			CheckOrderIsStored(payment.OrderId);
 			if (_paymentRepository.IsStored(payment.OrderId))
 			_paymentRepository.Update(payment);
@@ -308,9 +318,28 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
+		public IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId)
+		{
+			return _paymentMethodRepository.GetAll(pm => pm.ShippingPaymentMethod != null && pm.ShippingPaymentMethod.Exists(s => s.ShippingId == shippingId), includeProperties: "ShippingPaymentMethod");
+		}
+
 		#endregion
 
 		#region Shipping
+
+		public bool UpdateShipping(int shippingId, int orderId)
+		{
+			var shipping = _shippingRepository.Get(s => s.Id == shippingId && s.Enabled == true);
+			if (shipping != null) throw new InvalidDataException("Shipping not supported");
+
+			var order = GetOrder(orderId);
+            order.ShippingId = shippingId;
+
+			_ordersRepository.Update(order);
+			_ordersRepository.Save();
+
+            return true;
+		}
 
 		public IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0)
 		{

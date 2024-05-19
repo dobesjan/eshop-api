@@ -80,18 +80,13 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 			IEnumerable<Product> products = null;
 			var properties = "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency";
 
-			if (limit > 0)
+			if (categoryId > 0)
 			{
-				products = _productRepository.GetAll(includeProperties: properties, offset: offset, limit: limit);
+				products = _productRepository.GetAll(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId), includeProperties: properties, offset: offset, limit: limit);
 			}
 			else
 			{
-				products = _productRepository.GetAll(includeProperties: properties);
-			}
-
-			if (categoryId > 0 && products != null)
-			{
-				products = products.Where(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId));
+				products = _productRepository.GetAll(includeProperties: properties, offset: offset, limit: limit);
 			}
 
 			if (products == null)

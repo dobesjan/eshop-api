@@ -29,6 +29,7 @@ namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
 
 		bool AddOrderPayment(Payment payment);
 		bool UpdateOrderPayment(Payment payment);
+		IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId);
 
 		Order GetOrder(int orderId = 0);
 		IEnumerable<Order> GetOrders(int offset = 0, int limit = 0);
@@ -37,5 +38,7 @@ namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
 		IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0);
 		IEnumerable<Order> GetOrdersForUser(int userId = 0);
 		IEnumerable<Order> GetOrdersForAnonymousUser(string token = "");
+
+		bool UpdateShipping(int shippingId, int orderId);
 	}
 }
