@@ -2,6 +2,7 @@
 using Eshop.Api.Models;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Eshop.Api.Controllers
 {
@@ -36,6 +37,16 @@ namespace Eshop.Api.Controllers
 				_logger.LogError(ex, errorMessage);
 				return Json(new { success = false, message = errorMessage });
 			}
+		}
+
+		protected IActionResult CreateResult(bool success, string successMessage, string errorMessage)
+		{
+			return Json(new { success, message = success ? successMessage : errorMessage });
+		}
+
+		protected IActionResult CreateResult(bool success, object data, string successMessage = "", string errorMessage = "")
+		{
+			return Json(new { success, message = success ? successMessage : errorMessage, data });
 		}
 	}
 }

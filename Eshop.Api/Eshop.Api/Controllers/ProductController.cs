@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Eshop.Api.Controllers
 {
@@ -26,7 +27,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var product = _productService.GetProduct(id);
-				return Json(new { data = product.ToJson() });
+				return CreateResult(success: true, data: product.ToJson());
 			}, "Product not found!");
 		}
 
@@ -37,7 +38,7 @@ namespace Eshop.Api.Controllers
 			{
 				var products = _productService.GetProducts(offset, limit, categoryId);
 				var data = products.Select(c => c.ToJson()).ToList();
-				return Json(new { products = data });
+				return CreateResult(success: true, data: data);
 			}, "Problem while retrieving products!");
 		}
 
@@ -47,7 +48,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var success = _productService.UpsertProduct(product);
-				return Json(new { success, message = success ? "Product saved successfully!" : "Problem while saving product!" });
+				return CreateResult(success: success, successMessage: "Product saved successfully!", errorMessage: "Problem while saving product!");
 			}, "Problem while saving product!");
 		}
 
@@ -57,7 +58,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var success = _productService.UpsertProductPrice(priceList);
-				return Json(new { success, message = success ? "Product price saved successfully!" : "Problem while saving product price!" });
+				return CreateResult(success: success, successMessage: "Product price saved successfully!", errorMessage: "Problem while saving product price!");
 			}, "Problem while saving product price!");
 		}
 
@@ -67,7 +68,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var success = _productService.LinkImageToProduct(productId, imageId);
-				return Json(new { success, message = success ? "Image linked successfully!" : "Problem while linking image to product!" });
+				return CreateResult(success: success, successMessage: "Image linked successfully!", errorMessage: "Problem while linking image to product!");
 			}, "Problem while linking image to product!");
 		}
 
@@ -77,7 +78,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var success = _productService.UnlinkImageFromProduct(productId, imageId);
-				return Json(new { success, message = success ? "Image unlinked successfully!" : "Problem while unlinking image from product!" });
+				return CreateResult(success: success, successMessage: "Image unlinked successfully!", errorMessage: "Problem while unlinking image from product!");
 			}, "Problem while unlinking image from product!");
 		}
 
@@ -87,7 +88,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var success = _productService.AddProductToCategory(productCategory);
-				return Json(new { success, message = success ? "Product added to category successfully!" : "Problem while adding product to category!" });
+				return CreateResult(success: success, successMessage: "Product added to category successfully!", errorMessage: "Problem while adding product to category!");
 			}, "Problem while adding product to category!");
 		}
 	}

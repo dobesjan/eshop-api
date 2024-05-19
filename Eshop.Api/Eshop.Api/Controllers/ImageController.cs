@@ -1,6 +1,7 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Images;
 using Eshop.Api.Controllers;
 using Eshop.Api.Models.Images;
+using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -23,7 +24,7 @@ public class ImageController : EshopApiControllerBase
 		return HandleResponse(() =>
 		{
 			var imageGroups = _imageService.GetImageGroups();
-			return Json(new { imageGroups });
+			return CreateResult(success: true, data: imageGroups);
 		}, "Problem while retrieving image groups!");
 	}
 
@@ -33,7 +34,7 @@ public class ImageController : EshopApiControllerBase
 		return HandleResponse(() =>
 		{
 			var images = _imageService.GetImages(offset, limit, imageGroupId);
-			return Json(new { images });
+			return CreateResult(success: true, data: images);
 		}, "Problem while retrieving images!");
 	}
 
@@ -43,7 +44,7 @@ public class ImageController : EshopApiControllerBase
 		return HandleResponse(() =>
 		{
 			var image = _imageService.GetImage(id);
-			return Json(new { data = image });
+			return CreateResult(success: true, data: image);
 		}, "Image not found!");
 	}
 
@@ -53,7 +54,7 @@ public class ImageController : EshopApiControllerBase
 		return HandleResponse(() =>
 		{
 			var group = _imageService.GetImageGroup(id);
-			return Json(new { data = group });
+			return CreateResult(success: true, data: group);
 		}, "Image group not found!");
 	}
 
@@ -63,7 +64,7 @@ public class ImageController : EshopApiControllerBase
 		return HandleResponse(() =>
 		{
 			var success = _imageService.UpsertImageGroup(imageGroup);
-			return Json(new { success, message = success ? "Image group saved successfully!" : "Problem saving image group!" });
+			return CreateResult(success: success, successMessage: "Image group saved successfully!", errorMessage: "Problem saving image group!");
 		}, "Problem saving image group!");
 	}
 
@@ -73,7 +74,7 @@ public class ImageController : EshopApiControllerBase
 		return HandleResponse(() =>
 		{
 			var success = _imageService.UpsertImage(image);
-			return Json(new { success, message = success ? "Image saved successfully!" : "Problem saving image!" });
+			return CreateResult(success: success, successMessage: "Image saved successfully!", errorMessage: "Problem saving image!");
 		}, "Problem saving image!");
 	}
 }

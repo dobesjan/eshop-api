@@ -3,6 +3,7 @@ using Eshop.Api.Models;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Eshop.Api.Controllers
 {
@@ -23,7 +24,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var categories = _categoryService.GetCategories();
-				return Json(new { categories });
+				return CreateResult(success: true, data: categories);
 			}, "Problem while retrieving categories!");
 		}
 
@@ -33,7 +34,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var category = _categoryService.GetCategory(id);
-				return Json(new { category });
+				return CreateResult(success: true, data: category);
 			}, "Category not found!");
 		}
 
@@ -43,7 +44,7 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				bool success = _categoryService.UpsertCategory(category);
-				return Json(new { success, message = success ? "Category updated successfully" : "Problem saving category!" });
+				return CreateResult(success: success, successMessage: "Category updated successfully", errorMessage: "Problem saving category!");
 			}, "Problem saving category!");
 		}
 	}
