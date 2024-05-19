@@ -52,9 +52,6 @@ namespace Eshop.Api.Models.Orders
 		[InverseProperty(nameof(Order))]
 		public Payment? Payment { get; set; }
 
-		//DateTime when first products were put to cart
-		public DateTime Created { get; set; }
-
 		//DateTime when customer sent order
 		public DateTime? SentTime { get; set; }
 

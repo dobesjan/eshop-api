@@ -1,8 +1,11 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Orders;
+using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Interfaces;
+using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
 using Eshop.Api.Models.Products;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -30,9 +33,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		private readonly IRepository<Person> _personRepository;
 		private readonly IRepository<Customer> _customerRepository;
 
+		private readonly IRepository<Product> _productRepository;
+
 		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,Shipping,Customer,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod";
 
-		public OrderService(IRepository<Order> ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository)
+		public OrderService(IRepository<Order> ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository, IRepository<Product> productRepository)
 		{
 			_ordersRepository = ordersRepository;
 			_ordersStatusRepository = ordersStatusRepository;
@@ -45,6 +50,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			_addressRepository = addressRepository;
 			_personRepository = personRepository;
 			_customerRepository = customerRepository;
+			_productRepository = productRepository;
 		}
 
 		#region Order
@@ -62,6 +68,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			order.Validate();
 
 			_ordersRepository.Add(order);
+			_ordersRepository.Save();
 			return true;
 		}
 
@@ -139,7 +146,20 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (order == null) throw new ArgumentNullException("Order is null");
 			order.Validate();
 
-			return UpsertEntity(order, _ordersRepository);
+			if (order.Id > 0)
+			{
+				var selectedOrder = GetOrder(order.Id);
+
+				if (selectedOrder == null) throw new InvalidDataException($"Order with id: {order.Id} not found in db!");
+				if (selectedOrder.IsOrdered) throw new InvalidDataException($"Order with id: {order.Id} was already sent!");
+
+				_ordersRepository.Update(order);
+				_ordersRepository.Save();
+
+				return true;
+			}
+
+			throw new ArgumentNullException("Wrong identifier");
 		}
 
 		public bool UpsertOrder(Order order)
@@ -147,7 +167,54 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (order == null) throw new ArgumentNullException("Order is null");
 			order.Validate();
 
-			return UpsertEntity(order, _ordersRepository);
+			//return UpsertEntity(order, _ordersRepository);
+
+			if (order.Id > 0)
+			{
+				var selectedOrder = GetOrder(order.Id);
+
+				if (selectedOrder == null) throw new InvalidDataException($"Order with id: {order.Id} not found in db!");
+				if (selectedOrder.IsOrdered) throw new InvalidDataException($"Order with id: {order.Id} was already sent!");
+
+				_ordersRepository.Update(order);
+				_ordersRepository.Save();
+
+				return true;
+			}
+
+			throw new ArgumentNullException("Wrong identifier");
+		}
+
+		public Order GetShoppingCart(int userId)
+		{
+			var cart = _ordersRepository.Get(o => o.UserId == userId && !o.IsOrdered);
+			if (cart != null) return cart;
+
+			cart = new Order
+			{
+				UserId = userId,
+				OrderStatusId = 1,
+				IsOrdered = false,
+				CreatedDate = DateTime.UtcNow
+			};
+
+			return _ordersRepository.Add(cart, true);
+		}
+
+		public Order GetShoppingCart(string token)
+		{
+			var cart = _ordersRepository.Get(o => o.Token.Equals(token) && !o.IsOrdered);
+			if (cart != null) return cart;
+
+			cart = new Order
+			{
+				Token = token,
+				OrderStatusId = 1,
+				IsOrdered = false,
+				CreatedDate = DateTime.UtcNow
+			};
+
+			return _ordersRepository.Add(cart, true);
 		}
 
 		public bool UpdateOrderStatus(OrderStatus status, Order order)
@@ -228,29 +295,56 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		#endregion
 
 		#region Products
+		private bool CreateProductToOrderRelation(int productId, int count, int orderId)
+		{
+			if (count <= 0) throw new InvalidDataException("Count must be higher than 0");
+			var relation = _orderProductRepository.Get(o => o.ProductId == productId && o.OrderId == orderId);
+
+			if (relation != null)
+			{
+				relation.ProductId = productId;
+				relation.OrderId = orderId;
+				relation.Count = count;
+
+				_orderProductRepository.Update(relation, true);
+			}
+			else
+			{
+				var product = new OrderProduct
+				{
+					ProductId = productId,
+					OrderId = orderId,
+					Count = count
+				};
+				_orderProductRepository.Add(product, true);
+			}
+
+			return true;
+		}
+
 		public bool AddProductToOrder(OrderProduct product)
 		{
 			if (product == null) throw new ArgumentNullException("Order product is null");
 			product.Validate();
 
 			CheckOrderIsStored(product.OrderId);
+			return CreateProductToOrderRelation(product.ProductId, product.Count, product.OrderId);
+		}
 
-			var relation = _orderProductRepository.Get(o => o.ProductId == product.ProductId && o.OrderId == product.OrderId);
+		public bool AddProductToOrder(int productId, int userId, int count)
+		{
+			if (!_productRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
 
-			if (relation != null) 
-			{
-				relation.ProductId = product.ProductId;
-				relation.OrderId = product.OrderId;
-				relation.Count = product.Count;
+			var cart = GetShoppingCart(userId);
+			return CreateProductToOrderRelation(productId, count, cart.Id);
+		}
 
-				_orderProductRepository.Update(relation, true);
-			}
-			else
-			{
-				_orderProductRepository.Add(product, true);
-			}
+		public bool AddProductToOrder(int productId, string token, int count)
+		{
+			if (!_productRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
 
-			return true;
+			var cart = GetShoppingCart(token);
+			return CreateProductToOrderRelation(productId, count, cart.Id);
 		}
 
 		public bool AddProductsToOrder(IEnumerable<OrderProduct> products)

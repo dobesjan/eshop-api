@@ -15,14 +15,34 @@ namespace Eshop.Api.Controllers
 			_orderService = orderService;
 		}
 
-		[HttpPost("upsert")]
-		public IActionResult UpsertOrder([FromBody] Order order)
+		[HttpPost("update")]
+		public IActionResult UpdateOrder([FromBody] Order order)
 		{
 			return HandleResponse(() =>
 			{
-				var success = _orderService.UpsertOrder(order);
+				var success = _orderService.UpdateOrder(order);
 				return CreateResult(success: success, successMessage: "Order saved successfully!", errorMessage: "Problem while saving order!");
 			}, "Problem while saving order!");
+		}
+
+		[HttpGet("addProduct")]
+		public IActionResult AddProduct(int productId, string token, int count)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.AddProductToOrder(productId, token, count);
+				return CreateResult(success: success, successMessage: "Product added succesfully!", errorMessage: "Problem while saving product to order!");
+			}, "Problem while saving product to order!");
+		}
+
+		[HttpGet("addProductForUser")]
+		public IActionResult AddProductForUser(int productId, int userId, int count)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.AddProductToOrder(productId, userId, count);
+				return CreateResult(success: success, successMessage: "Product added succesfully!", errorMessage: "Problem while saving product to order!");
+			}, "Problem while saving product to order!");
 		}
 	}
 }

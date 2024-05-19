@@ -20,6 +20,8 @@ namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
 		bool SendOrder(Order order);
 
 		bool AddProductToOrder(OrderProduct product);
+		bool AddProductToOrder(int productId, int userId, int count);
+		bool AddProductToOrder(int productId, string token, int count);
 		bool AddProductsToOrder(IEnumerable<OrderProduct> products);
 		bool RemoveProductFromOrder(int productId, int orderId);
 		bool UpdateProductCount(int productId, int count, int orderId);
@@ -32,6 +34,8 @@ namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
 		IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId);
 
 		Order GetOrder(int orderId = 0);
+		Order GetShoppingCart(int userId);
+		Order GetShoppingCart(string token);
 		IEnumerable<Order> GetOrders(int offset = 0, int limit = 0);
 		IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0);
 		IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0);
