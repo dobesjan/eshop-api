@@ -5,6 +5,7 @@ using Eshop.Api.BusinessLayer.Services.Orders;
 using Eshop.Api.BusinessLayer.Services.Products;
 using Eshop.Api.DataAccess.Data;
 using Eshop.Api.DataAccess.Repository;
+using Eshop.Api.DataAccess.Repository.Contacts;
 using Eshop.Api.DataAccess.Repository.Currencies;
 using Eshop.Api.DataAccess.Repository.Orders;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,11 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
 builder.Services.AddScoped<ICurrencyPreferenceRepository, CurrencyPreferenceRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IOrderProductRepository, OrderProductRepository>();
+builder.Services.AddScoped<IShippingRepository, ShippingRepository>();
+builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
 
 
 //TODO: Consider how to refactor

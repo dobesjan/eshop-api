@@ -1,5 +1,6 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.DataAccess.Repository;
+using Eshop.Api.DataAccess.Repository.Contacts;
 using Eshop.Api.DataAccess.Repository.Orders;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;
@@ -21,24 +22,37 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 	{
 		private readonly IOrderRepository _ordersRepository;
 		private readonly IRepository<OrderStatus> _ordersStatusRepository;
-		private readonly IRepository<OrderProduct> _orderProductRepository;
+		private readonly IOrderProductRepository _orderProductRepository;
 
-		private readonly IRepository<Shipping> _shippingRepository;
+		private readonly IShippingRepository _shippingRepository;
 		private readonly IRepository<ShippingPaymentMethod> _shippingPaymentMethodRepository;
 
 		private readonly IRepository<Payment> _paymentRepository;
-		private readonly IRepository<PaymentMethod> _paymentMethodRepository;
+		private readonly IPaymentMethodRepository _paymentMethodRepository;
 		private readonly IRepository<PaymentStatus> _paymentStatusRepository;
 
-		private readonly IRepository<Address> _addressRepository;
+		private readonly IAddressRepository _addressRepository;
 		private readonly IRepository<Person> _personRepository;
-		private readonly IRepository<Customer> _customerRepository;
+		private readonly ICustomerRepository _customerRepository;
 
 		private readonly IRepository<Product> _productRepository;
 
 		private readonly ICurrencyService _currencyService;
 
-		public OrderService(IOrderRepository ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository, IRepository<Product> productRepository, ICurrencyService currencyService)
+		public OrderService(
+			IOrderRepository ordersRepository,
+			IRepository<OrderStatus> ordersStatusRepository,
+			IOrderProductRepository orderProductRepository,
+			IShippingRepository shippingRepository,
+			IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository,
+			IRepository<Payment> paymentRepository,
+			IPaymentMethodRepository paymentMethodRepository,
+			IRepository<PaymentStatus> paymentStatusRepository,
+			IAddressRepository addressRepository,
+			IRepository<Person> personRepository,
+			ICustomerRepository customerRepository,
+			IRepository<Product> productRepository,
+			ICurrencyService currencyService)
 		{
 			_ordersRepository = ordersRepository;
 			_ordersStatusRepository = ordersStatusRepository;
@@ -295,9 +309,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			Address selectedAddress = null;
 
-			if (order.AddressId > 0)
+			if (order.AddressId.HasValue && order.AddressId > 0)
 			{
-				selectedAddress = _addressRepository.Get(a => a.Id == order.AddressId);
+				selectedAddress = _addressRepository.GetAddress(order.AddressId.Value);
 				if (selectedAddress != null)
 				{
 					address.Address.Id = selectedAddress.Id;
@@ -341,9 +355,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Order not found in db!");
 			}
 
-			if (order.CustomerId > 0)
+			if (order.CustomerId.HasValue && order.CustomerId > 0)
 			{
-				var selectedCustomer = _customerRepository.Get(a => a.Id == order.CustomerId, includeProperties: "Person,Address");
+				var selectedCustomer = _customerRepository.GetCustomer(order.CustomerId.Value);
 				if (selectedCustomer != null)
 				{
 					customerVM.Customer.Id = selectedCustomer.Id;
@@ -375,7 +389,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		private bool CreateProductToOrderRelation(int productId, int count, Order order)
 		{
 			if (count <= 0) throw new InvalidDataException("Count must be higher than 0");
-			var relation = _orderProductRepository.Get(o => o.ProductId == productId && o.OrderId == order.Id);
+			var relation = _orderProductRepository.GetOrderProduct(productId, order.Id);
 
 			if (relation != null)
 			{
@@ -403,7 +417,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		private bool RemoveProductFromOrderInternal(int productId, int orderId)
 		{
-			var product = _orderProductRepository.Get(p => p.ProductId == productId && p.OrderId == orderId);
+			var product = _orderProductRepository.GetOrderProduct(productId, orderId);
 			if (product == null) throw new InvalidDataException("Product not found");
 
 			_orderProductRepository.Remove(product);
@@ -469,7 +483,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool UpdateProductCount(int productId, int count, int orderId)
 		{
-			var product = _orderProductRepository.Get(p => p.ProductId == productId && p.OrderId == orderId);
+			var product = _orderProductRepository.GetOrderProduct(productId, orderId);
 			if (product == null) throw new InvalidDataException("Product not found");
 
 			product.Count = count;
@@ -484,7 +498,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		private void CheckIfShippingSupportsPaymentMethod(int paymentId, int orderId)
 		{
 			var order = GetOrder(orderId);
-			var shipping = _shippingRepository.Get(s => s.Id == order.ShippingId && s.Enabled == true && s.ShippingPaymentMethod != null, includeProperties: "ShippingPaymentMethod.PaymentMethod");
+			if (!order.ShippingId.HasValue) throw new InvalidDataException("Shipping method not provided");
+			var shipping = _shippingRepository.GetEnabledShipping(order.ShippingId.Value);
 			if (shipping != null 
 				&& shipping.ShippingPaymentMethod != null 
 				&& shipping.ShippingPaymentMethod.Exists(sp => sp.PaymentMethodId == paymentId)) throw new InvalidDataException("Payment not supported in provided shipping");
@@ -492,8 +507,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool UpsertOrderPayment(Payment payment)
 		{
-			var paymentMethod = _paymentMethodRepository.Get(p => p.Enabled && p.Id == payment.PaymentMethodId);
-			if (paymentMethod == null) throw new InvalidDataException("Payment method not supported");
+			if (!_paymentMethodRepository.IsPaymentMethodEnabled(payment.PaymentMethodId)) throw new InvalidDataException("Payment method not supported");
 			if (!_paymentStatusRepository.IsStored(payment.PaymentStatusId)) throw new InvalidDataException($"Wrong payment status with id {payment.PaymentStatusId}");
 
 			CheckIfShippingSupportsPaymentMethod(payment.Id, payment.OrderId);
@@ -503,6 +517,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId)
 		{
+			//TODO: Fix
 			return _paymentMethodRepository.GetAll(pm => pm.ShippingPaymentMethod != null && pm.ShippingPaymentMethod.Exists(s => s.ShippingId == shippingId), includeProperties: "ShippingPaymentMethod");
 		}
 
@@ -512,7 +527,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool UpdateShippingInternal(int shippingId, Order order)
 		{
-			var shipping = _shippingRepository.Get(s => s.Id == shippingId && s.Enabled == true);
+			var shipping = _shippingRepository.GetEnabledShipping(shippingId);
 			if (shipping != null) throw new InvalidDataException("Shipping not supported");
 
             order.ShippingId = shippingId;
