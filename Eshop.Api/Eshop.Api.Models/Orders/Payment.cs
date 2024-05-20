@@ -1,4 +1,5 @@
-﻿using Eshop.Api.Models.Interfaces;
+﻿using Eshop.Api.Models.Currencies;
+using Eshop.Api.Models.Interfaces;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,13 @@ namespace Eshop.Api.Models.Orders
 		[ValidateNever]
 		public PaymentMethod PaymentMethod { get; set; }
 
-		public int Cost { get; set; }
-		public int CostWithTax { get; set; }
+		public int CurrencyId { get; set; }
+
+		[ForeignKey(nameof(CurrencyId))]
+		[ValidateNever]
+		public Currency Currency { get; set; }
+
+		public double Cost { get; set; }
+		public double CostWithTax { get; set; }
 	}
 }

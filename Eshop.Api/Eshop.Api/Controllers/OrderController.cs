@@ -156,6 +156,24 @@ namespace Eshop.Api.Controllers
 			}, "Problem while saving payment!");
 		}
 
-		//TODO: Get orders method
+		[HttpGet("get")]
+		public IActionResult GetOrder(int id = 0)
+		{
+			return HandleResponse(() =>
+			{
+				var order = _orderService.GetOrder(id);
+				return CreateResult(success: true, data: order.ToJson());
+			}, "Order not found!");
+		}
+
+		[HttpPost("list")]
+		public IActionResult ListOrders([FromBody] OrderFilter filter)
+		{
+			return HandleResponse(() =>
+			{
+				var orders = _orderService.GetOrdersByFilter(filter);
+				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
+			}, "Orders not found!");
+		}
 	}
 }

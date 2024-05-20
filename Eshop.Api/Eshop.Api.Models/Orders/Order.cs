@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Eshop.Api.Models.Orders
 {
@@ -100,6 +101,31 @@ namespace Eshop.Api.Models.Orders
 			Customer.Address.Validate();
 
 			return true;
+		}
+
+		public override object ToJson()
+		{
+			return new
+			{
+				Id = Id,
+				UserId = UserId,
+				Token = Token,
+				OrderStatusId = OrderStatusId,
+				OrderStatus = OrderStatus,
+				IsOrdered = IsOrdered,
+				CreatedDate = CreatedDate,
+				//OrderProducts = OrderProducts != null && OrderProducts.Any() ? OrderProducts.Select(op => new { Id = op.ProductId, Name = op.Product.Name, IsInStock = op.Product.IsInStock, Count = op.Count }) : null,
+				OrderProducts = OrderProducts != null && OrderProducts.Any() ? OrderProducts.Select(op => op.ToJson()) : null,
+				ShippingId = ShippingId,
+				Shipping = Shipping,
+				CustomerId = CustomerId,
+				Customer = Customer,
+				AddressId = AddressId,
+				DeliveryAddress = DeliveryAddress,
+				Payment = Payment != null ? new { PaymentStatus = Payment.PaymentStatus, PaymentMethod = Payment.PaymentMethod, Cost = Payment.Cost, CostWithTax = Payment.CostWithTax } : null,
+				SentTime = SentTime,
+				DeliveryTime = DeliveryTime
+			};
 		}
 	}
 }

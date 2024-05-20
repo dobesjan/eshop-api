@@ -36,7 +36,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		private readonly IRepository<Product> _productRepository;
 
-		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,Shipping,Customer,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod";
+		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,OrderProducts.Product.ProductPrices,Shipping,Customer,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod,Payment.Currency";
 
 		public OrderService(IRepository<Order> ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository, IRepository<Product> productRepository)
 		{
@@ -558,22 +558,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		#region Filtering
 		public IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0)
 		{
-			if (filter == null) throw new ArgumentNullException("Filter is null");
-
-			/*
-			return _ordersRepository.GetAll(
-				o => o.Id == filter.OrderId && o.OrderStatus.Name.Contains(filter.OrderStatus) && o.IsOrdered == filter.IsOrdered
-				&& o.CreatedDate >= filter.CreatedDateFrom && o.CreatedDate <= filter.CreatedDateTo && o.SentTime >= filter.SentTimeFrom
-				&& o.SentTime <= filter.SentTimeTo && o.DeliveryTime >= filter.DeliveryTimeFrom && o.DeliveryTime <= filter.DeliveryTimeTo
-				&& o.Shipping.Name.Contains(filter.Shipping) && o.Customer.Person.FirstName.Contains(filter.FirstName)
-				&& o.Customer.Person.LastName.Contains(filter.LastName) && o.Customer.Person.Email.Contains(filter.Email)
-				&& o.Customer.Person.PhoneNumber.Contains(filter.PhoneNumber) && o.Customer.Address.Street.Contains(filter.Street)
-				&& o.Customer.Address.City.Contains(filter.City) && o.Customer.Address.Country.Contains(filter.Country)
-				&& o.Customer.NewsletterAgree == filter.NewsletterAgree,
-				includeProperties: _orderProperties,
-				offset: offset,
-				limit: limit);
-			*/
+			if (filter == null) throw new ArgumentNullException(nameof(filter));
 
 			var parameter = Expression.Parameter(typeof(Order), "o");
 			var expressions = new List<Expression>();
@@ -637,7 +622,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			if (!expressions.Any())
 			{
-				throw new ArgumentException("No filter criteria provided.");
+				return _ordersRepository.GetAll(includeProperties: _orderProperties, offset: offset, limit: limit);
 			}
 
 			var body = expressions.Aggregate(Expression.AndAlso);
@@ -645,6 +630,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			return _ordersRepository.GetAll(predicate, _orderProperties, offset, limit);
 		}
+
 
 		#endregion
 	}
