@@ -6,6 +6,7 @@ using Eshop.Api.BusinessLayer.Services.Products;
 using Eshop.Api.DataAccess.Data;
 using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Currencies;
+using Eshop.Api.DataAccess.Repository.Orders;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,8 +19,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped<ICurrencyRepository, ICurrencyRepository>();
+builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
 builder.Services.AddScoped<ICurrencyPreferenceRepository, CurrencyPreferenceRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 
 //TODO: Consider how to refactor

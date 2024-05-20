@@ -1,5 +1,6 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.DataAccess.Repository;
+using Eshop.Api.DataAccess.Repository.Orders;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
@@ -18,7 +19,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 {
     public class OrderService : EshopService, IOrderService
 	{
-		private readonly IRepository<Order> _ordersRepository;
+		private readonly IOrderRepository _ordersRepository;
 		private readonly IRepository<OrderStatus> _ordersStatusRepository;
 		private readonly IRepository<OrderProduct> _orderProductRepository;
 
@@ -37,9 +38,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		private readonly ICurrencyService _currencyService;
 
-		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,OrderProducts.Product.ProductPrices,Shipping,Customer,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod,Payment.Currency,Currency";
-
-		public OrderService(IRepository<Order> ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository, IRepository<Product> productRepository, ICurrencyService currencyService)
+		public OrderService(IOrderRepository ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository, IRepository<Product> productRepository, ICurrencyService currencyService)
 		{
 			_ordersRepository = ordersRepository;
 			_ordersStatusRepository = ordersStatusRepository;
@@ -102,7 +101,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public IEnumerable<Order> GetOrders(int offset = 0, int limit = 0)
 		{
-			return _ordersRepository.GetAll(includeProperties: _orderProperties, offset: offset, limit: limit);
+			return _ordersRepository.GetOrders(offset, limit);
 		}
 
 		public Order GetOrder(int orderId = 0)
@@ -112,7 +111,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Order not found in db!");
 			}
 
-			var order = _ordersRepository.Get(orderId, includeProperties: _orderProperties);
+			var order = _ordersRepository.GetOrder(orderId);
 			if (order == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -128,7 +127,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Wrong token!");
 			}
 
-			var orders = _ordersRepository.GetAll(c => c.Token == token, includeProperties: _orderProperties);
+			var orders = _ordersRepository.GetOrdersForAnonymousUser(token);
 			if (orders == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -144,7 +143,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Wrong user!");
 			}
 
-			var orders = _ordersRepository.GetAll(c => c.UserId == userId, includeProperties: _orderProperties);
+			var orders = _ordersRepository.GetOrdersForUser(userId);
 			if (orders == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -214,7 +213,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public Order GetShoppingCart(int userId)
 		{
-			var cart = _ordersRepository.Get(o => o.UserId == userId && !o.IsOrdered);
+			var cart = _ordersRepository.GetShoppingCart(userId);
 			if (cart != null) return cart;
 
 			var currency = _currencyService.GetPreferedCurrency(userId);
@@ -233,7 +232,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public Order GetShoppingCart(string token)
 		{
-			var cart = _ordersRepository.Get(o => o.Token.Equals(token) && !o.IsOrdered);
+			var cart = _ordersRepository.GetShoppingCart(token);
 			if (cart != null) return cart;
 
 			var currency = _currencyService.GetPreferedCurrency(token);
@@ -268,7 +267,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0)
 		{
-			return _ordersRepository.GetAll(o => o.OrderStatusId == orderStatusId, includeProperties: _orderProperties, offset: offset, limit: limit);
+			return _ordersRepository.GetOrdersByStatus(orderStatusId, offset, limit);
 		}
 
 		#endregion
@@ -544,18 +543,13 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		{
 			IEnumerable<Order> orders = null;
 
-			if (limit > 0)
+			if (shippingId > 0)
 			{
-				orders = _ordersRepository.GetAll(includeProperties: _orderProperties, offset: offset, limit: limit);
+				orders = _ordersRepository.GetOrdersByShipping(shippingId, offset: offset, limit: limit);
 			}
 			else
 			{
-				orders = _ordersRepository.GetAll(includeProperties: _orderProperties);
-			}
-
-			if (shippingId > 0 && orders != null)
-			{
-				orders = orders.Where(o => o.Shipping.Id == shippingId);
+				orders = _ordersRepository.GetOrders(offset: offset, limit: limit);
 			}
 
 			if (orders == null)
@@ -634,13 +628,13 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			if (!expressions.Any())
 			{
-				return _ordersRepository.GetAll(includeProperties: _orderProperties, offset: offset, limit: limit);
+				return _ordersRepository.GetOrders(offset: offset, limit: limit);
 			}
 
 			var body = expressions.Aggregate(Expression.AndAlso);
 			var predicate = Expression.Lambda<Func<Order, bool>>(body, parameter);
 
-			return _ordersRepository.GetAll(predicate, _orderProperties, offset, limit);
+			return _ordersRepository.GetOrders(predicate, offset, limit);
 		}
 
 

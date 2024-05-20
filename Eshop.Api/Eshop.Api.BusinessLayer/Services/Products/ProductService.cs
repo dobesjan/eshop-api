@@ -18,6 +18,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 		private readonly IRepository<Image> _imageRepository;
 		private readonly IRepository<ProductImage> _productImageRepository;
 		private readonly IRepository<ProductPriceList> _productPriceListRepository;
+		private readonly string _properties = "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency";
 
 		public ProductService(
 			IRepository<Category> categoryRepository,
@@ -64,7 +65,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 				throw new InvalidDataException("Product not found in db!");
 			}
 
-			var product = _productRepository.Get(c => c.Id == id, includeProperties: "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency");
+			var product = _productRepository.Get(c => c.Id == id, includeProperties: _properties);
 			if (product == null)
 			{
 				throw new InvalidDataException("Product not found in db!");
@@ -77,15 +78,14 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 		public IEnumerable<Product> GetProducts(int offset = 0, int limit = 0, int categoryId = 0)
 		{
 			IEnumerable<Product> products = null;
-			var properties = "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency";
 
 			if (categoryId > 0)
 			{
-				products = _productRepository.GetAll(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId), includeProperties: properties, offset: offset, limit: limit);
+				products = _productRepository.GetAll(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId), includeProperties: _properties, offset: offset, limit: limit);
 			}
 			else
 			{
-				products = _productRepository.GetAll(includeProperties: properties, offset: offset, limit: limit);
+				products = _productRepository.GetAll(includeProperties: _properties, offset: offset, limit: limit);
 			}
 
 			if (products == null)
