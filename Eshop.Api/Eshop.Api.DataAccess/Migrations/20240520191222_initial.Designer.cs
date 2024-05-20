@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eshop.Api.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240520170016_recalculateCosts")]
-    partial class recalculateCosts
+    [Migration("20240520191222_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -187,6 +187,30 @@ namespace Eshop.Api.DataAccess.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Eshop.Api.Models.Currencies.CurrencyPreference", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CurrencyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrencyId");
+
+                    b.ToTable("CurrencyPreferences");
+                });
+
             modelBuilder.Entity("Eshop.Api.Models.Images.Image", b =>
                 {
                     b.Property<int>("Id")
@@ -240,6 +264,9 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("CurrencyId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
@@ -268,6 +295,8 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId");
+
+                    b.HasIndex("CurrencyId");
 
                     b.HasIndex("CustomerId");
 
@@ -699,6 +728,17 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("Eshop.Api.Models.Currencies.CurrencyPreference", b =>
+                {
+                    b.HasOne("Eshop.Api.Models.Currencies.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Currency");
+                });
+
             modelBuilder.Entity("Eshop.Api.Models.Images.Image", b =>
                 {
                     b.HasOne("Eshop.Api.Models.Images.ImageGroup", "ImageGroup")
@@ -717,6 +757,12 @@ namespace Eshop.Api.DataAccess.Migrations
                         .HasForeignKey("AddressId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("Eshop.Api.Models.Currencies.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Eshop.Api.Models.Contacts.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId");
@@ -730,6 +776,8 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.HasOne("Eshop.Api.Models.Orders.Shipping", "Shipping")
                         .WithMany()
                         .HasForeignKey("ShippingId");
+
+                    b.Navigation("Currency");
 
                     b.Navigation("Customer");
 

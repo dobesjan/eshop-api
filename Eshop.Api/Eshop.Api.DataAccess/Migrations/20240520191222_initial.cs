@@ -33,7 +33,7 @@ namespace Eshop.Api.DataAccess.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ParentCategoryId = table.Column<int>(type: "int", nullable: false),
+                    ParentCategoryId = table.Column<int>(type: "int", nullable: true),
                     Enabled = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -45,6 +45,33 @@ namespace Eshop.Api.DataAccess.Migrations
                         principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Currencies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Acronym = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Currencies", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ImageGroup",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ImageGroup", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -66,7 +93,8 @@ namespace Eshop.Api.DataAccess.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Enabled = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -158,6 +186,47 @@ namespace Eshop.Api.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CurrencyPreferences",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    CurrencyId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CurrencyPreferences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CurrencyPreferences_Currencies_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "Currencies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Image",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageGroupId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Image", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Image_ImageGroup_ImageGroupId",
+                        column: x => x.ImageGroupId,
+                        principalTable: "ImageGroup",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductCategories",
                 columns: table => new
                 {
@@ -191,11 +260,18 @@ namespace Eshop.Api.DataAccess.Migrations
                     Cost = table.Column<double>(type: "float", nullable: false),
                     CostWithTax = table.Column<double>(type: "float", nullable: false),
                     CostBefore = table.Column<double>(type: "float", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false)
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    CurrencyId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductPrices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductPrices_Currencies_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "Currencies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ProductPrices_Products_ProductId",
                         column: x => x.ProductId,
@@ -258,16 +334,47 @@ namespace Eshop.Api.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductImage",
+                columns: table => new
+                {
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    ImageId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductImage", x => new { x.ProductId, x.ImageId });
+                    table.ForeignKey(
+                        name: "FK_ProductImage_Image_ImageId",
+                        column: x => x.ImageId,
+                        principalTable: "Image",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductImage_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
                     Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OrderStatusId = table.Column<int>(type: "int", nullable: false),
+                    IsOrdered = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AddressId = table.Column<int>(type: "int", nullable: false)
+                    ShippingId = table.Column<int>(type: "int", nullable: true),
+                    CustomerId = table.Column<int>(type: "int", nullable: true),
+                    AddressId = table.Column<int>(type: "int", nullable: true),
+                    SentTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeliveryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CurrencyId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -278,36 +385,26 @@ namespace Eshop.Api.DataAccess.Migrations
                         principalTable: "Addresses",
                         principalColumn: "Id");
                     table.ForeignKey(
+                        name: "FK_Orders_Contacts_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Contacts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Orders_Currencies_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "Currencies",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_Orders_OrderStatus_OrderStatusId",
                         column: x => x.OrderStatusId,
                         principalTable: "OrderStatus",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CustomerOrders",
-                columns: table => new
-                {
-                    OrderId = table.Column<int>(type: "int", nullable: false),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CustomerOrders", x => new { x.CustomerId, x.OrderId });
                     table.ForeignKey(
-                        name: "FK_CustomerOrders_Contacts_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Contacts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CustomerOrders_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Orders_Shippings_ShippingId",
+                        column: x => x.ShippingId,
+                        principalTable: "Shippings",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -316,11 +413,22 @@ namespace Eshop.Api.DataAccess.Migrations
                 {
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     OrderId = table.Column<int>(type: "int", nullable: false),
+                    Count = table.Column<int>(type: "int", nullable: false),
+                    CurrencyId = table.Column<int>(type: "int", nullable: false),
+                    Cost = table.Column<double>(type: "float", nullable: false),
+                    CostWithTax = table.Column<double>(type: "float", nullable: false),
+                    CostBefore = table.Column<double>(type: "float", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OrderProducts", x => new { x.ProductId, x.OrderId });
+                    table.ForeignKey(
+                        name: "FK_OrderProducts_Currencies_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "Currencies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_OrderProducts_Orders_OrderId",
                         column: x => x.OrderId,
@@ -336,31 +444,6 @@ namespace Eshop.Api.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrderShippings",
-                columns: table => new
-                {
-                    OrderId = table.Column<int>(type: "int", nullable: false),
-                    ShippingId = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OrderShippings", x => new { x.ShippingId, x.OrderId });
-                    table.ForeignKey(
-                        name: "FK_OrderShippings_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_OrderShippings_Shippings_ShippingId",
-                        column: x => x.ShippingId,
-                        principalTable: "Shippings",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Payments",
                 columns: table => new
                 {
@@ -368,16 +451,30 @@ namespace Eshop.Api.DataAccess.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OrderId = table.Column<int>(type: "int", nullable: false),
                     PaymentStatusId = table.Column<int>(type: "int", nullable: false),
-                    Cost = table.Column<int>(type: "int", nullable: false),
-                    CostWithTax = table.Column<int>(type: "int", nullable: false)
+                    PaymentMethodId = table.Column<int>(type: "int", nullable: false),
+                    CurrencyId = table.Column<int>(type: "int", nullable: false),
+                    Cost = table.Column<double>(type: "float", nullable: false),
+                    CostWithTax = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Payments", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Payments_Currencies_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "Currencies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Payments_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Payments_PaymentMethods_PaymentMethodId",
+                        column: x => x.PaymentMethodId,
+                        principalTable: "PaymentMethods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -398,6 +495,15 @@ namespace Eshop.Api.DataAccess.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Currencies",
+                columns: new[] { "Id", "Acronym", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Kč", "Česká koruna" },
+                    { 2, "€", "Euro" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "OrderStatus",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
@@ -412,11 +518,20 @@ namespace Eshop.Api.DataAccess.Migrations
 
             migrationBuilder.InsertData(
                 table: "PaymentMethods",
+                columns: new[] { "Id", "Enabled", "Name" },
+                values: new object[,]
+                {
+                    { 1, true, "Cash on delivery" },
+                    { 2, true, "Card" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "PaymentStatuses",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Cash on delivery" },
-                    { 2, "Card" }
+                    { 1, "Not paid" },
+                    { 2, "Paid" }
                 });
 
             migrationBuilder.InsertData(
@@ -424,8 +539,8 @@ namespace Eshop.Api.DataAccess.Migrations
                 columns: new[] { "Id", "Enabled", "Name" },
                 values: new object[,]
                 {
-                    { 1, false, "DPD" },
-                    { 2, false, "PPL" }
+                    { 1, true, "DPD" },
+                    { 2, true, "PPL" }
                 });
 
             migrationBuilder.InsertData(
@@ -459,9 +574,19 @@ namespace Eshop.Api.DataAccess.Migrations
                 column: "PersonId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomerOrders_OrderId",
-                table: "CustomerOrders",
-                column: "OrderId");
+                name: "IX_CurrencyPreferences_CurrencyId",
+                table: "CurrencyPreferences",
+                column: "CurrencyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Image_ImageGroupId",
+                table: "Image",
+                column: "ImageGroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderProducts_CurrencyId",
+                table: "OrderProducts",
+                column: "CurrencyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderProducts_OrderId",
@@ -474,19 +599,40 @@ namespace Eshop.Api.DataAccess.Migrations
                 column: "AddressId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_CurrencyId",
+                table: "Orders",
+                column: "CurrencyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_CustomerId",
+                table: "Orders",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_OrderStatusId",
                 table: "Orders",
                 column: "OrderStatusId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderShippings_OrderId",
-                table: "OrderShippings",
-                column: "OrderId");
+                name: "IX_Orders_ShippingId",
+                table: "Orders",
+                column: "ShippingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_CurrencyId",
+                table: "Payments",
+                column: "CurrencyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_OrderId",
                 table: "Payments",
-                column: "OrderId");
+                column: "OrderId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_PaymentMethodId",
+                table: "Payments",
+                column: "PaymentMethodId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_PaymentStatusId",
@@ -497,6 +643,16 @@ namespace Eshop.Api.DataAccess.Migrations
                 name: "IX_ProductCategories_CategoryId",
                 table: "ProductCategories",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductImage_ImageId",
+                table: "ProductImage",
+                column: "ImageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductPrices_CurrencyId",
+                table: "ProductPrices",
+                column: "CurrencyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductPrices_ProductId",
@@ -513,13 +669,10 @@ namespace Eshop.Api.DataAccess.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CustomerOrders");
+                name: "CurrencyPreferences");
 
             migrationBuilder.DropTable(
                 name: "OrderProducts");
-
-            migrationBuilder.DropTable(
-                name: "OrderShippings");
 
             migrationBuilder.DropTable(
                 name: "Payments");
@@ -528,13 +681,13 @@ namespace Eshop.Api.DataAccess.Migrations
                 name: "ProductCategories");
 
             migrationBuilder.DropTable(
+                name: "ProductImage");
+
+            migrationBuilder.DropTable(
                 name: "ProductPrices");
 
             migrationBuilder.DropTable(
                 name: "ShippingPaymentMethods");
-
-            migrationBuilder.DropTable(
-                name: "Contacts");
 
             migrationBuilder.DropTable(
                 name: "Orders");
@@ -546,22 +699,34 @@ namespace Eshop.Api.DataAccess.Migrations
                 name: "Categories");
 
             migrationBuilder.DropTable(
+                name: "Image");
+
+            migrationBuilder.DropTable(
                 name: "Products");
 
             migrationBuilder.DropTable(
                 name: "PaymentMethods");
 
             migrationBuilder.DropTable(
+                name: "Contacts");
+
+            migrationBuilder.DropTable(
+                name: "Currencies");
+
+            migrationBuilder.DropTable(
+                name: "OrderStatus");
+
+            migrationBuilder.DropTable(
                 name: "Shippings");
 
             migrationBuilder.DropTable(
-                name: "Persons");
+                name: "ImageGroup");
 
             migrationBuilder.DropTable(
                 name: "Addresses");
 
             migrationBuilder.DropTable(
-                name: "OrderStatus");
+                name: "Persons");
 
             migrationBuilder.DropTable(
                 name: "AddressTypes");

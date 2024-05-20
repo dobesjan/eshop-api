@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.Models.Contacts;
+using Eshop.Api.Models.Currencies;
 using Eshop.Api.Models.Interfaces;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -58,6 +59,12 @@ namespace Eshop.Api.Models.Orders
 
 		//DateTime when order is delivered to customer
 		public DateTime? DeliveryTime { get; set; }
+
+		public int CurrencyId { get; set; }
+
+		[ForeignKey(nameof(CurrencyId))]
+		[ValidateNever]
+		public Currency Currency { get; set; }
 
 		public double CalculateTotalCost(int currency, bool isWithTax = false)
 		{
@@ -124,7 +131,8 @@ namespace Eshop.Api.Models.Orders
 				DeliveryAddress = DeliveryAddress,
 				Payment = Payment != null ? new { PaymentStatus = Payment.PaymentStatus, PaymentMethod = Payment.PaymentMethod, Cost = Payment.Cost, CostWithTax = Payment.CostWithTax } : null,
 				SentTime = SentTime,
-				DeliveryTime = DeliveryTime
+				DeliveryTime = DeliveryTime,
+				Currency = Currency
 			};
 		}
 	}

@@ -1,4 +1,5 @@
 using Eshop.Api.BusinessLayer.Services;
+using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.BusinessLayer.Services.Images;
 using Eshop.Api.BusinessLayer.Services.Interfaces;
 using Eshop.Api.BusinessLayer.Services.Interfaces.Images;
@@ -29,6 +30,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 
 var app = builder.Build();
 

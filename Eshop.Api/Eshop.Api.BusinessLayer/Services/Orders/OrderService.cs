@@ -1,4 +1,5 @@
-﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Orders;
+﻿using Eshop.Api.BusinessLayer.Services.Currencies;
+using Eshop.Api.BusinessLayer.Services.Interfaces.Orders;
 using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Interfaces;
 using Eshop.Api.Models;
@@ -36,9 +37,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		private readonly IRepository<Product> _productRepository;
 
-		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,OrderProducts.Product.ProductPrices,Shipping,Customer,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod,Payment.Currency";
+		private readonly ICurrencyService _currencyService;
 
-		public OrderService(IRepository<Order> ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository, IRepository<Product> productRepository)
+		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,OrderProducts.Product.ProductPrices,Shipping,Customer,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod,Payment.Currency,Currency";
+
+		public OrderService(IRepository<Order> ordersRepository, IRepository<OrderStatus> ordersStatusRepository, IRepository<OrderProduct> orderProductRepository, IRepository<Shipping> shippingRepository, IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository, IRepository<Payment> paymentRepository, IRepository<PaymentMethod> paymentMethodRepository, IRepository<PaymentStatus> paymentStatusRepository, IRepository<Address> addressRepository, IRepository<Person> personRepository, IRepository<Customer> customerRepository, IRepository<Product> productRepository, ICurrencyService currencyService)
 		{
 			_ordersRepository = ordersRepository;
 			_ordersStatusRepository = ordersStatusRepository;
@@ -52,6 +55,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			_personRepository = personRepository;
 			_customerRepository = customerRepository;
 			_productRepository = productRepository;
+			_currencyService = currencyService;
 		}
 
 		#region Order
@@ -215,12 +219,15 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			var cart = _ordersRepository.Get(o => o.UserId == userId && !o.IsOrdered);
 			if (cart != null) return cart;
 
+			var currency = _currencyService.GetPreferedCurrency(userId);
+
 			cart = new Order
 			{
 				UserId = userId,
 				OrderStatusId = 1,
 				IsOrdered = false,
-				CreatedDate = DateTime.UtcNow
+				CreatedDate = DateTime.UtcNow,
+				CurrencyId = currency.Id
 			};
 
 			return _ordersRepository.Add(cart, true);
@@ -231,12 +238,15 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			var cart = _ordersRepository.Get(o => o.Token.Equals(token) && !o.IsOrdered);
 			if (cart != null) return cart;
 
+			var currency = _currencyService.GetPreferedCurrency(token);
+
 			cart = new Order
 			{
 				Token = token,
 				OrderStatusId = 1,
 				IsOrdered = false,
-				CreatedDate = DateTime.UtcNow
+				CreatedDate = DateTime.UtcNow,
+				CurrencyId = currency.Id
 			};
 
 			return _ordersRepository.Add(cart, true);
@@ -365,15 +375,16 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		#endregion
 
 		#region Products
-		private bool CreateProductToOrderRelation(int productId, int count, int orderId)
+		private bool CreateProductToOrderRelation(int productId, int count, Order order)
 		{
 			if (count <= 0) throw new InvalidDataException("Count must be higher than 0");
-			var relation = _orderProductRepository.Get(o => o.ProductId == productId && o.OrderId == orderId);
+			var relation = _orderProductRepository.Get(o => o.ProductId == productId && o.OrderId == order.Id);
 
 			if (relation != null)
 			{
 				relation.ProductId = productId;
-				relation.OrderId = orderId;
+				relation.OrderId = order.Id;
+				relation.CurrencyId = order.CurrencyId;
 				relation.Count = count;
 
 				_orderProductRepository.Update(relation, true);
@@ -383,7 +394,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				var product = new OrderProduct
 				{
 					ProductId = productId,
-					OrderId = orderId,
+					OrderId = order.Id,
+					CurrencyId = order.CurrencyId,
 					Count = count
 				};
 				_orderProductRepository.Add(product, true);
@@ -408,8 +420,10 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (product == null) throw new ArgumentNullException("Order product is null");
 			product.Validate();
 
-			CheckOrderIsStored(product.OrderId);
-			return CreateProductToOrderRelation(product.ProductId, product.Count, product.OrderId);
+			var selectedOrder = GetOrder(product.OrderId);
+			if (selectedOrder == null) throw new InvalidDataException("Order not found");
+
+			return CreateProductToOrderRelation(product.ProductId, product.Count, selectedOrder);
 		}
 
 		public bool AddProductToOrder(int productId, int userId, int count)
@@ -417,7 +431,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (!_productRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
 
 			var cart = GetShoppingCart(userId);
-			return CreateProductToOrderRelation(productId, count, cart.Id);
+			return CreateProductToOrderRelation(productId, count, cart);
 		}
 
 		public bool AddProductToOrder(int productId, string token, int count)
@@ -425,7 +439,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (!_productRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
 
 			var cart = GetShoppingCart(token);
-			return CreateProductToOrderRelation(productId, count, cart.Id);
+			return CreateProductToOrderRelation(productId, count, cart);
 		}
 
 		public bool AddProductsToOrder(IEnumerable<OrderProduct> products)

@@ -2,6 +2,7 @@
 using Eshop.Api.Models;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Eshop.Api.Controllers
@@ -31,6 +32,11 @@ namespace Eshop.Api.Controllers
 			try
 			{
 				return action();
+			}
+			catch (InvalidDataException ex)
+			{
+				_logger.LogError(ex, ex.Message);
+				return Json(new { success = false, message = ex.Message });
 			}
 			catch (Exception ex)
 			{

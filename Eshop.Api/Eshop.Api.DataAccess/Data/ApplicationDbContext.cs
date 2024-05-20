@@ -37,6 +37,7 @@ namespace Eshop.Api.DataAccess.Data
 		public DbSet<Person> Persons { get; set; }
 
 		public DbSet<Currency> Currencies { get; set; }
+		public DbSet<CurrencyPreference> CurrencyPreferences { get; set; }
 
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -86,6 +87,12 @@ namespace Eshop.Api.DataAccess.Data
 				.HasOne(pc => pc.Order)
 				.WithMany(c => c.OrderProducts)
 				.HasForeignKey(pc => pc.OrderId);
+
+			modelBuilder.Entity<Order>()
+				.HasOne(o => o.Currency)
+				.WithMany()
+				.HasForeignKey(o => o.CurrencyId)
+				.OnDelete(DeleteBehavior.NoAction);
 
 			modelBuilder.Entity<ShippingPaymentMethod>()
 				.HasKey(pc => new { pc.PaymentMethodId, pc.ShippingId });
