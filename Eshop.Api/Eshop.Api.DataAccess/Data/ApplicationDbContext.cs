@@ -112,13 +112,13 @@ namespace Eshop.Api.DataAccess.Data
 			);
 
 			modelBuilder.Entity<PaymentMethod>().HasData(
-				new PaymentMethod { Id = 1, Name = "Cash on delivery" },
-				new PaymentMethod { Id = 2, Name = "Card" }
+				new PaymentMethod { Id = 1, Name = "Cash on delivery", Enabled = true },
+				new PaymentMethod { Id = 2, Name = "Card", Enabled = true }
 			);
 
 			modelBuilder.Entity<Shipping>().HasData(
-				new Shipping { Id = 1, Name = "DPD" },
-				new Shipping { Id = 2, Name = "PPL" }
+				new Shipping { Id = 1, Name = "DPD", Enabled = true },
+				new Shipping { Id = 2, Name = "PPL", Enabled = true }
 			);
 
 			modelBuilder.Entity<ShippingPaymentMethod>().HasData(
@@ -139,6 +139,11 @@ namespace Eshop.Api.DataAccess.Data
 			modelBuilder.Entity<Currency>().HasData(
 				new Currency { Id = 1, Name = "Česká koruna", Acronym = "Kč" },
 				new Currency { Id = 2, Name = "Euro", Acronym = "€" }
+			);
+
+			modelBuilder.Entity<PaymentStatus>().HasData(
+				new PaymentStatus { Id = 1, Name = "Not paid" },
+				new PaymentStatus { Id = 2, Name = "Paid" }
 			);
 		}
 	}

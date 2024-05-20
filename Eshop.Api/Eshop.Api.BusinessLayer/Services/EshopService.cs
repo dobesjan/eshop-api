@@ -16,7 +16,7 @@ namespace Eshop.Api.BusinessLayer.Services
 	public class EshopService : IEshopService
 	{
 
-		public bool UpsertEntity<T>(T entity, IRepository<T> repository) where T : Entity
+		public T UpsertEntity<T>(T entity, IRepository<T> repository) where T : Entity
 		{
 			if (entity != null)
 			{
@@ -27,16 +27,14 @@ namespace Eshop.Api.BusinessLayer.Services
 						throw new InvalidDataException($"{nameof(entity)} with id: {entity.Id} not found in db!");
 					}
 
-					repository.Update(entity);
-					repository.Save();
+					entity = repository.Update(entity, true);
 				}
 				else
 				{
-					repository.Add(entity);
-					repository.Save();
+					entity = repository.Add(entity, true);
 				}
 
-				return true;
+				return entity;
 			}
 			else
 			{

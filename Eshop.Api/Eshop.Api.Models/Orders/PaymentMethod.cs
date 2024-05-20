@@ -14,6 +14,8 @@ namespace Eshop.Api.Models.Orders
 		[Required]
 		public string Name { get; set; }
 
+		public bool Enabled { get; set; }
+
 		[ValidateNever]
 		public List<ShippingPaymentMethod> ShippingPaymentMethod { get; set; }
 	}

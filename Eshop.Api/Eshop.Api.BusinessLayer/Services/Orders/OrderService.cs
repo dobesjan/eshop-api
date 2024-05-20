@@ -286,16 +286,22 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Order not found in db!");
 			}
 
-			if (UpsertEntity(address.Address, _addressRepository))
+			Address selectedAddress = null;
+
+			if (order.AddressId > 0)
 			{
-				var addressId = _addressRepository.Get(a => a.City == address.Address.City && a.Street == address.Address.Street && a.Country == address.Address.Country)?.Id;
-
-				if (!addressId.HasValue)
+				selectedAddress = _addressRepository.Get(a => a.Id == order.AddressId);
+				if (selectedAddress != null)
 				{
-					throw new InvalidDataException("Address not found in db!");
+					address.Address.Id = selectedAddress.Id;
 				}
+			}
 
-				order.AddressId = addressId.Value;
+			selectedAddress = UpsertEntity(address.Address, _addressRepository);
+
+			if (selectedAddress != null)
+			{
+				order.AddressId = selectedAddress.Id;
 				_ordersRepository.Update(order, true);
 
 				return true;
@@ -328,20 +334,28 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Order not found in db!");
 			}
 
+			if (order.CustomerId > 0)
+			{
+				var selectedCustomer = _customerRepository.Get(a => a.Id == order.CustomerId, includeProperties: "Person,Address");
+				if (selectedCustomer != null)
+				{
+					customerVM.Customer.Id = selectedCustomer.Id;
+					customerVM.Customer.PersonId = selectedCustomer.PersonId;
+					customerVM.Customer.Person.Id = selectedCustomer.PersonId;
+					customerVM.Customer.AddressId = selectedCustomer.AddressId;
+					customerVM.Customer.Address.Id = selectedCustomer.AddressId;
+				}
+			}
+
 			customerVM.Customer.Person.Validate();
 			customerVM.Customer.Address.Validate();
 
-			//TODO: Handle update when customer exists
+			var person = UpsertEntity(customerVM.Customer.Person, _personRepository);
+			var address = UpsertEntity(customerVM.Customer.Address, _addressRepository);
+			if (person == null) throw new ArgumentNullException("Error storing person");
+			if (address == null) throw new ArgumentNullException("Error storing address");
 
-			var person = _personRepository.Add(customerVM.Customer.Person, true);
-			var address = _addressRepository.Add(customerVM.Customer.Address, true);
-			var newCustomer = new Customer
-			{
-				PersonId = person.Id,
-				AddressId = address.Id,
-			};
-
-			var customer = _customerRepository.Add(newCustomer, true);
+			var customer = UpsertEntity(customerVM.Customer, _customerRepository);
 			order.CustomerId = customer.Id;
 			_ordersRepository.Update(order, true);
 
@@ -459,15 +473,21 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		private void CheckIfShippingSupportsPaymentMethod(int paymentId, int orderId)
 		{
 			var order = GetOrder(orderId);
-			var shipping = _shippingRepository.Get(s => s.Id == order.ShippingId && s.Enabled == true && s.ShippingPaymentMethod != null && s.ShippingPaymentMethod.Exists(sp => sp.PaymentMethodId == paymentId), includeProperties: "ShippingPaymentMethod.PaymentMethod");
-			if (shipping != null) throw new InvalidDataException("Payment not supported in provided shipping");
+			var shipping = _shippingRepository.Get(s => s.Id == order.ShippingId && s.Enabled == true && s.ShippingPaymentMethod != null, includeProperties: "ShippingPaymentMethod.PaymentMethod");
+			if (shipping != null 
+				&& shipping.ShippingPaymentMethod != null 
+				&& shipping.ShippingPaymentMethod.Exists(sp => sp.PaymentMethodId == paymentId)) throw new InvalidDataException("Payment not supported in provided shipping");
 		}
 
 		public bool UpsertOrderPayment(Payment payment)
 		{
+			var paymentMethod = _paymentMethodRepository.Get(p => p.Enabled && p.Id == payment.PaymentMethodId);
+			if (paymentMethod == null) throw new InvalidDataException("Payment method not supported");
+			if (!_paymentStatusRepository.IsStored(payment.PaymentStatusId)) throw new InvalidDataException($"Wrong payment status with id {payment.PaymentStatusId}");
+
 			CheckIfShippingSupportsPaymentMethod(payment.Id, payment.OrderId);
 			CheckOrderIsStored(payment.OrderId);
-			return UpsertEntity(payment, _paymentRepository);
+			return UpsertEntity(payment, _paymentRepository) != null;
 		}
 
 		public IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId)

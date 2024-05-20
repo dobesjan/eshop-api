@@ -43,7 +43,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 
 		public bool UpsertCategory(Category category)
 		{
-			return UpsertEntity(category, _categoryRepository);
+			return UpsertEntity(category, _categoryRepository) != null;
 		}
 	}
 }

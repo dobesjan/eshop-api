@@ -55,7 +55,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 				return true;
 			}
 
-			return UpsertEntity(category, _productCategoryRepository);
+			return UpsertEntity(category, _productCategoryRepository) != null;
 		}
 
 		public Product GetProduct(int id)
@@ -140,12 +140,12 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 
 		public bool UpsertProduct(Product product)
 		{
-			return UpsertEntity(product, _productRepository);
+			return UpsertEntity(product, _productRepository) != null;
 		}
 
 		public bool UpsertProductPrice(ProductPriceList productPriceList)
 		{
-			return UpsertEntity(productPriceList, _productPriceListRepository);
+			return UpsertEntity(productPriceList, _productPriceListRepository) != null;
 		}
 	}
 }

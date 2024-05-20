@@ -4,6 +4,7 @@ using Eshop.Api.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eshop.Api.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240520141340_shippingAndPaymentEnabled")]
+    partial class shippingAndPaymentEnabled
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -429,18 +432,6 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PaymentStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Not paid"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Paid"
-                        });
                 });
 
             modelBuilder.Entity("Eshop.Api.Models.Orders.Shipping", b =>

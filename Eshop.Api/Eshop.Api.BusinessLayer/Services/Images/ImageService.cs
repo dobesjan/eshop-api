@@ -80,12 +80,12 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 
 		public bool UpsertImage(Image image)
 		{
-			return UpsertEntity(image, _imageRepository);
+			return UpsertEntity(image, _imageRepository) != null;
 		}
 
 		public bool UpsertImageGroup(ImageGroup imageGroup)
 		{
-			return UpsertEntity(imageGroup, _imageGroupRepository);
+			return UpsertEntity(imageGroup, _imageGroupRepository) != null;
 		}
 	}
 }
