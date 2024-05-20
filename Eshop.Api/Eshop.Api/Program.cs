@@ -9,7 +9,7 @@ using Eshop.Api.BusinessLayer.Services.Orders;
 using Eshop.Api.BusinessLayer.Services.Products;
 using Eshop.Api.DataAccess.Data;
 using Eshop.Api.DataAccess.Repository;
-using Eshop.Api.DataAccess.Repository.Interfaces;
+using Eshop.Api.DataAccess.Repository.Currencies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +22,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<ICurrencyRepository, ICurrencyRepository>();
+builder.Services.AddScoped<ICurrencyPreferenceRepository, CurrencyPreferenceRepository>();
+
 
 //TODO: Consider how to refactor
 builder.Services.AddScoped<IEshopService, EshopService>();

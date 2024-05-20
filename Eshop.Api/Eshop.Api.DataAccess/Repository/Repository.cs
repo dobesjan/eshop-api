@@ -1,5 +1,4 @@
 ﻿using Eshop.Api.DataAccess.Data;
-using Eshop.Api.DataAccess.Repository.Interfaces;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.DataAccess.Repository
 {
-	public class Repository<T> : IRepository<T> where T : Entity
+    public class Repository<T> : IRepository<T> where T : Entity
 	{
 		private readonly ApplicationDbContext _db;
 		internal DbSet<T> dbset;
@@ -49,6 +48,18 @@ namespace Eshop.Api.DataAccess.Repository
 
 		public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
 		{
+			IQueryable<T> query = GetInternal(includeProperties, tracked);
+			return query.Where(filter).FirstOrDefault();
+		}
+
+		public T Get(int id, string? includeProperties = null, bool tracked = false)
+		{
+			IQueryable<T> query = GetInternal(includeProperties, tracked);
+			return query.Where(e => e.Id == id).FirstOrDefault();
+		}
+
+		private IQueryable<T> GetInternal(string? includeProperties, bool tracked)
+		{
 			IQueryable<T> query;
 
 
@@ -70,7 +81,8 @@ namespace Eshop.Api.DataAccess.Repository
 					query = query.Include(includeProp);
 				}
 			}
-			return query.Where(filter).FirstOrDefault();
+
+			return query;
 		}
 
 		public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, int offset = 0, int limit = 0)

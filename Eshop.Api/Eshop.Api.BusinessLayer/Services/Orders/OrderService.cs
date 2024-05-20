@@ -1,7 +1,6 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.BusinessLayer.Services.Interfaces.Orders;
 using Eshop.Api.DataAccess.Repository;
-using Eshop.Api.DataAccess.Repository.Interfaces;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
@@ -18,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.BusinessLayer.Services.Orders
 {
-	public class OrderService : EshopService, IOrderService
+    public class OrderService : EshopService, IOrderService
 	{
 		private readonly IRepository<Order> _ordersRepository;
 		private readonly IRepository<OrderStatus> _ordersStatusRepository;
@@ -114,7 +113,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Order not found in db!");
 			}
 
-			var order = _ordersRepository.Get(c => c.Id == orderId, includeProperties: _orderProperties);
+			var order = _ordersRepository.Get(orderId, includeProperties: _orderProperties);
 			if (order == null)
 			{
 				throw new InvalidDataException("Order not found in db!");

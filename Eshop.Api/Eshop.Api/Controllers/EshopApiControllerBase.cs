@@ -1,4 +1,4 @@
-﻿using Eshop.Api.DataAccess.Repository.Interfaces;
+﻿using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;

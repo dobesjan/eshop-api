@@ -1,5 +1,5 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Images;
-using Eshop.Api.DataAccess.Repository.Interfaces;
+using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.Models.Images;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.BusinessLayer.Services.Images
 {
-	public class ImageService : EshopService, IImageService
+    public class ImageService : EshopService, IImageService
 	{
 		private readonly IRepository<ImageGroup> _imageGroupRepository;
 		private readonly IRepository<Image> _imageRepository;

@@ -1,5 +1,5 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
-using Eshop.Api.DataAccess.Repository.Interfaces;
+using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Interfaces;
 using Eshop.Api.Models.Products;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.BusinessLayer.Services.Products
 {
-	public class CategoryService : EshopService, ICategoryService
+    public class CategoryService : EshopService, ICategoryService
 	{
 		private IRepository<Category> _categoryRepository;
 

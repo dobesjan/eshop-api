@@ -1,6 +1,5 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Interfaces;
 using Eshop.Api.DataAccess.Repository;
-using Eshop.Api.DataAccess.Repository.Interfaces;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
@@ -13,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.BusinessLayer.Services
 {
-	public class EshopService : IEshopService
+    public class EshopService : IEshopService
 	{
 
 		public T UpsertEntity<T>(T entity, IRepository<T> repository) where T : Entity
