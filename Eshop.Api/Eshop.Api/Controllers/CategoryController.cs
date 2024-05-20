@@ -1,4 +1,4 @@
-﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
+﻿using Eshop.Api.BusinessLayer.Services.Products;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +7,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Eshop.Api.Controllers
 {
-	[ApiController]
+    [ApiController]
 	[Route("api/[controller]")]
 	public class CategoryController : EshopApiControllerBase
 	{

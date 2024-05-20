@@ -1,10 +1,6 @@
 using Eshop.Api.BusinessLayer.Services;
 using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.BusinessLayer.Services.Images;
-using Eshop.Api.BusinessLayer.Services.Interfaces;
-using Eshop.Api.BusinessLayer.Services.Interfaces.Images;
-using Eshop.Api.BusinessLayer.Services.Interfaces.Orders;
-using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
 using Eshop.Api.BusinessLayer.Services.Orders;
 using Eshop.Api.BusinessLayer.Services.Products;
 using Eshop.Api.DataAccess.Data;

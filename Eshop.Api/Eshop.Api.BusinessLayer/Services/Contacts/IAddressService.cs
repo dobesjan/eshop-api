@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Eshop.Api.BusinessLayer.Services.Interfaces.Contacts
+namespace Eshop.Api.BusinessLayer.Services.Contacts
 {
-	public interface IAddressService
-	{
-		bool SaveAddress(Address address);
-	}
+    public interface IAddressService
+    {
+        bool SaveAddress(Address address);
+    }
 }

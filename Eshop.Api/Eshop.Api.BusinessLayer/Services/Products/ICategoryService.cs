@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Eshop.Api.BusinessLayer.Services.Interfaces.Products
+namespace Eshop.Api.BusinessLayer.Services.Products
 {
     public interface ICategoryService : IEshopService
     {

@@ -4,13 +4,13 @@ using Eshop.Api.Models.Products;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Eshop.Api.BusinessLayer.Services.Products;
 
 namespace Eshop.Api.Controllers
 {
-	[ApiController]
+    [ApiController]
 	[Route("api/[controller]")]
 	public class ProductController : EshopApiControllerBase
 	{

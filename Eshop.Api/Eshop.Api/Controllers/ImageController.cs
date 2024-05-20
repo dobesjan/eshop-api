@@ -1,4 +1,4 @@
-﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Images;
+﻿using Eshop.Api.BusinessLayer.Services.Images;
 using Eshop.Api.Controllers;
 using Eshop.Api.Models.Images;
 using Eshop.Api.Models.Products;

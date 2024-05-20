@@ -1,5 +1,4 @@
-﻿using Eshop.Api.BusinessLayer.Services.Interfaces;
-using Eshop.Api.DataAccess.Repository;
+﻿using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;

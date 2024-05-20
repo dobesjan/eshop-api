@@ -1,11 +1,11 @@
-﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Orders;
+﻿using Eshop.Api.BusinessLayer.Services.Orders;
 using Eshop.Api.Models.Orders;
 using Eshop.Api.Models.ViewModels.Contacts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eshop.Api.Controllers
 {
-	[ApiController]
+    [ApiController]
 	[Route("api/[controller]")]
 	public class OrderController : EshopApiControllerBase
 	{

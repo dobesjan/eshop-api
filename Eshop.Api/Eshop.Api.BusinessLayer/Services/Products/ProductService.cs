@@ -1,5 +1,4 @@
-﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Products;
-using Eshop.Api.DataAccess.Repository;
+﻿using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Images;
 using Eshop.Api.Models.Products;

@@ -1,5 +1,4 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Currencies;
-using Eshop.Api.BusinessLayer.Services.Interfaces.Orders;
 using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;

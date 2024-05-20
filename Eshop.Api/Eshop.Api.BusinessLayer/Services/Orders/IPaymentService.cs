@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Eshop.Api.BusinessLayer.Services.Interfaces.Orders
+namespace Eshop.Api.BusinessLayer.Services.Orders
 {
-	public interface IPaymentService
-	{
+    public interface IPaymentService
+    {
 
-	}
+    }
 }

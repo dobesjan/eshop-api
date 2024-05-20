@@ -1,5 +1,4 @@
-﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Images;
-using Eshop.Api.DataAccess.Repository;
+﻿using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.Models.Images;
 using System;
 using System.Collections.Generic;
