@@ -5,6 +5,7 @@ using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
 using Eshop.Api.Models.Products;
+using Eshop.Api.Models.ViewModels.Contacts;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Newtonsoft.Json.Linq;
 using System;
@@ -60,6 +61,31 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			{
 				throw new InvalidDataException("Order not found in db!");
 			}
+		}
+
+		private bool UpdateOrderStatusInternal(int statusId, Order order)
+		{
+			if (!_ordersStatusRepository.IsStored(statusId))
+			{
+				throw new InvalidDataException("Wrong order status");
+			}
+
+			order.OrderStatusId = statusId;
+			_ordersRepository.Update(order);
+			_ordersRepository.Save();
+
+			return true;
+		}
+
+		private bool SendOrderInternal(Order order)
+		{
+			order.IsReadyToSend();
+
+			order.SentTime = DateTime.UtcNow;
+			order.IsOrdered = true;
+
+			_ordersRepository.Update(order);
+			return true;
 		}
 
 		public bool CreateOrder(Order order)
@@ -124,20 +150,19 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			return orders;
 		}
-		public bool SendOrder(Order order)
+		public bool SendOrder(string token)
 		{
-			if (order == null) throw new ArgumentNullException("Order is null");
-			order.IsReadyToSend();
+			var order = GetShoppingCart(token);
+			SendOrderInternal(order);
 
-			if (!_ordersRepository.IsStored(order.Id))
-			{
-				throw new InvalidDataException("Order not found in db!");
-			}
+			return true;
+		}
 
-			order.SentTime = DateTime.UtcNow;
-			order.IsOrdered = true;
+		public bool SendOrder(int userId)
+		{
+			var order = GetShoppingCart(userId);
+			SendOrderInternal(order);
 
-			_ordersRepository.Update(order);
 			return true;
 		}
 
@@ -217,19 +242,18 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return _ordersRepository.Add(cart, true);
 		}
 
-		public bool UpdateOrderStatus(OrderStatus status, Order order)
+		public bool UpdateOrderStatus(int statusId, int userId)
 		{
-			if (order == null) throw new ArgumentNullException("Order is null");
-			CheckOrderIsStored(order.Id);
+			var order = GetShoppingCart(userId);
+			UpdateOrderStatusInternal(statusId, order);
 
-			if (!_ordersStatusRepository.IsStored(status.Id))
-			{
-				throw new InvalidDataException("Wrong order status");
-			}
+			return true;
+		}
 
-			order.OrderStatus = status;
-			_ordersRepository.Add(order);
-			_ordersRepository.Save();
+		public bool UpdateOrderStatus(int statusId, string token)
+		{
+			var order = GetShoppingCart(token);
+			UpdateOrderStatusInternal(statusId, order);
 
 			return true;
 		}
@@ -242,18 +266,29 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		#endregion
 
 		#region Contacts
-		public bool LinkDeliveryAddressToOrder(int orderId, Address address)
+		public bool LinkDeliveryAddressToOrder(AddressVM address)
 		{
-			var order = _ordersRepository.Get(pi => pi.Id == orderId);
+			Order order = null;
+
+			if (address.Address == null) throw new ArgumentNullException("Address not provided");
+
+			if (address.Address.UserId > 0)
+			{
+				order = GetShoppingCart(address.Address.UserId);
+			}
+			else
+			{
+				order = GetShoppingCart(address.Token);
+			}
 			
 			if (order == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
 			}
 
-			if (UpsertEntity(address, _addressRepository))
+			if (UpsertEntity(address.Address, _addressRepository))
 			{
-				var addressId = _addressRepository.Get(a => a.City == address.City && a.Street == address.Street && a.Country == address.Country)?.Id;
+				var addressId = _addressRepository.Get(a => a.City == address.Address.City && a.Street == address.Address.Street && a.Country == address.Address.Country)?.Id;
 
 				if (!addressId.HasValue)
 				{
@@ -269,25 +304,46 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			throw new InvalidDataException("Error!");
 		}
 
-		public bool LinkCustomerContactToOrder(int orderId, Customer customer)
+		public bool LinkCustomerContactToOrder(CustomerVM customerVM)
 		{
 			//TODO: Consider split - maybe to repository
-			if (customer == null) throw new ArgumentNullException("Customer is null");
-			if (customer.Person == null) throw new ArgumentNullException("Person is null");
-			if (customer.Address == null) throw new ArgumentNullException("Address is null");
+			if (customerVM == null) throw new ArgumentNullException("Customer is null");
+			if (customerVM.Customer == null) throw new ArgumentNullException("Customer is null");
+			if (customerVM.Customer.Person == null) throw new ArgumentNullException("Person is null");
+			if (customerVM.Customer.Address == null) throw new ArgumentNullException("Address is null");
 
-			customer.Person.Validate();
-			customer.Address.Validate();
+			Order order = null;
 
-			var person = _personRepository.Add(customer.Person, true);
-			var address = _addressRepository.Add(customer.Address, true);
+			if (customerVM.UserId > 0)
+			{
+				order = GetShoppingCart(customerVM.UserId);
+			}
+			else
+			{
+				order = GetShoppingCart(customerVM.Token);
+			}
+
+			if (order == null)
+			{
+				throw new InvalidDataException("Order not found in db!");
+			}
+
+			customerVM.Customer.Person.Validate();
+			customerVM.Customer.Address.Validate();
+
+			//TODO: Handle update when customer exists
+
+			var person = _personRepository.Add(customerVM.Customer.Person, true);
+			var address = _addressRepository.Add(customerVM.Customer.Address, true);
 			var newCustomer = new Customer
 			{
 				PersonId = person.Id,
 				AddressId = address.Id,
 			};
 
-			_customerRepository.Add(newCustomer, true);
+			var customer = _customerRepository.Add(newCustomer, true);
+			order.CustomerId = customer.Id;
+			_ordersRepository.Update(order, true);
 
 			return true;
 		}
@@ -318,6 +374,17 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				};
 				_orderProductRepository.Add(product, true);
 			}
+
+			return true;
+		}
+
+		private bool RemoveProductFromOrderInternal(int productId, int orderId)
+		{
+			var product = _orderProductRepository.Get(p => p.ProductId == productId && p.OrderId == orderId);
+			if (product == null) throw new InvalidDataException("Product not found");
+
+			_orderProductRepository.Remove(product);
+			_orderProductRepository.Save();
 
 			return true;
 		}
@@ -359,13 +426,18 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
-		public bool RemoveProductFromOrder(int productId, int orderId)
+		public bool RemoveProductFromOrder(int productId, int userId)
 		{
-			var product = _orderProductRepository.Get(p => p.ProductId == productId && p.OrderId == orderId);
-			if (product == null) throw new InvalidDataException("Product not found");
+			var cart = GetShoppingCart(userId);
+			RemoveProductFromOrderInternal(productId, cart.Id);
 
-			_orderProductRepository.Remove(product);
-			_orderProductRepository.Save();
+			return true;
+		}
+
+		public bool RemoveProductFromOrder(int productId, string token)
+		{
+			var cart = GetShoppingCart(token);
+			RemoveProductFromOrderInternal(productId, cart.Id);
 
 			return true;
 		}
@@ -391,26 +463,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (shipping != null) throw new InvalidDataException("Payment not supported in provided shipping");
 		}
 
-		public bool AddOrderPayment(Payment payment)
+		public bool UpsertOrderPayment(Payment payment)
 		{
 			CheckIfShippingSupportsPaymentMethod(payment.Id, payment.OrderId);
-
-			_paymentRepository.Add(payment);
-			_paymentRepository.Save();
-
-			return true;
-		}
-
-		public bool UpdateOrderPayment(Payment payment)
-		{
-			CheckIfShippingSupportsPaymentMethod(payment.Id, payment.OrderId);
-
 			CheckOrderIsStored(payment.OrderId);
-			if (_paymentRepository.IsStored(payment.OrderId))
-			_paymentRepository.Update(payment);
-			_paymentRepository.Save();
-
-			return true;
+			return UpsertEntity(payment, _paymentRepository);
 		}
 
 		public IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId)
@@ -422,18 +479,33 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		#region Shipping
 
-		public bool UpdateShipping(int shippingId, int orderId)
+		public bool UpdateShippingInternal(int shippingId, Order order)
 		{
 			var shipping = _shippingRepository.Get(s => s.Id == shippingId && s.Enabled == true);
 			if (shipping != null) throw new InvalidDataException("Shipping not supported");
 
-			var order = GetOrder(orderId);
             order.ShippingId = shippingId;
 
 			_ordersRepository.Update(order);
 			_ordersRepository.Save();
 
             return true;
+		}
+
+		public bool UpdateShipping(int shippingId, int userId)
+		{
+			var cart = GetShoppingCart(userId);
+			UpdateShippingInternal(shippingId, cart);
+
+			return true;
+		}
+
+		public bool UpdateShipping(int shippingId, string token)
+		{
+			var cart = GetShoppingCart(token);
+			UpdateShippingInternal(shippingId, cart);
+
+			return true;
 		}
 
 		public IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0)

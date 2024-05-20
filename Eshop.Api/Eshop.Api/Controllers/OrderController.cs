@@ -1,5 +1,6 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Interfaces.Orders;
 using Eshop.Api.Models.Orders;
+using Eshop.Api.Models.ViewModels.Contacts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Eshop.Api.Controllers
@@ -44,5 +45,117 @@ namespace Eshop.Api.Controllers
 				return CreateResult(success: success, successMessage: "Product added succesfully!", errorMessage: "Problem while saving product to order!");
 			}, "Problem while saving product to order!");
 		}
+
+		[HttpGet("deleteProduct")]
+		public IActionResult DeleteProduct(int productId, string token)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.RemoveProductFromOrder(productId, token);
+				return CreateResult(success: success, successMessage: "Product removed succesfully!", errorMessage: "Problem while removing product from order!");
+			}, "Problem while removing product from order!");
+		}
+
+		[HttpGet("deleteProductForUser")]
+		public IActionResult DeleteProductForUser(int productId, int userId)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.RemoveProductFromOrder(productId, userId);
+				return CreateResult(success: success, successMessage: "Product removed succesfully!", errorMessage: "Problem while removing product from order!");
+			}, "Problem while removing product from order!");
+		}
+
+		[HttpGet("updateStatus")]
+		public IActionResult UpdateStatus(int statusId, string token)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.UpdateOrderStatus(statusId, token);
+				return CreateResult(success: success, successMessage: "Order status updated succesfully!", errorMessage: "Problem while updating Order status!");
+			}, "Problem while updating Order status!");
+		}
+
+		[HttpGet("updateStatusForUser")]
+		public IActionResult UpdateStatusForUser(int statusId, string userId)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.UpdateOrderStatus(statusId, userId);
+				return CreateResult(success: success, successMessage: "Order status updated succesfully!", errorMessage: "Problem while updating Order status!");
+			}, "Problem while updating Order status!");
+		}
+
+		[HttpGet("sendOrder")]
+		public IActionResult SendOrder(string token)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.SendOrder(token);
+				return CreateResult(success: success, successMessage: "Order sent!", errorMessage: "Problem while sending order!");
+			}, "Problem while sending order!");
+		}
+
+		[HttpGet("sendOrderForUser")]
+		public IActionResult SendOrderForUser(string userId)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.SendOrder(userId);
+				return CreateResult(success: success, successMessage: "Order sent!", errorMessage: "Problem while sending order!");
+			}, "Problem while sending order!");
+		}
+
+		[HttpGet("updateShipping")]
+		public IActionResult UpdateShipping(int shippingId, string token)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.UpdateShipping(shippingId, token);
+				return CreateResult(success: success, successMessage: "Order shipping updated succesfully!", errorMessage: "Problem while updating Order shipping!");
+			}, "Problem while updating Order shipping!");
+		}
+
+		[HttpGet("updateShippingForUser")]
+		public IActionResult UpdateShippingForUser(int shippingId, string userId)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.UpdateShipping(shippingId, userId);
+				return CreateResult(success: success, successMessage: "Order shipping updated succesfully!", errorMessage: "Problem while updating Order shipping!");
+			}, "Problem while updating Order shipping!");
+		}
+
+		[HttpPost("linkDeliveryAddress")]
+		public IActionResult LinkDeliveryAddress([FromBody] AddressVM address)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.LinkDeliveryAddressToOrder(address);
+				return CreateResult(success: success, successMessage: "Address saved successfully!", errorMessage: "Problem while saving address!");
+			}, "Problem while saving address!");
+		}
+
+		[HttpPost("linkCustomer")]
+		public IActionResult LinkCustomer([FromBody] CustomerVM customerVM)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.LinkCustomerContactToOrder(customerVM);
+				return CreateResult(success: success, successMessage: "Customer saved successfully!", errorMessage: "Problem while saving customer!");
+			}, "Problem while saving customer!");
+		}
+
+		[HttpPost("savePayment")]
+		public IActionResult SavePayment([FromBody] Payment payment)
+		{
+			return HandleResponse(() =>
+			{
+				var success = _orderService.UpsertOrderPayment(payment);
+				return CreateResult(success: success, successMessage: "Payment saved successfully!", errorMessage: "Problem while saving payment!");
+			}, "Problem while saving payment!");
+		}
+
+		//TODO: Get orders method
 	}
 }
