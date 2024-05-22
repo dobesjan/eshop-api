@@ -16,7 +16,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
     {
         bool CreateOrder(Order order);
         bool UpdateOrder(Order order);
-        bool UpsertOrder(Order order);
         bool UpdateOrderStatus(int statusId, int userId);
         bool UpdateOrderStatus(int statusId, string token);
         bool SendOrder(string token);
@@ -28,7 +27,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
         bool AddProductsToOrder(IEnumerable<OrderProduct> products);
         bool RemoveProductFromOrder(int productId, int userId);
         bool RemoveProductFromOrder(int productId, string token);
-        bool UpdateProductCount(int productId, int count, int orderId);
 
         bool LinkCustomerContactToOrder(CustomerVM customer);
         bool LinkDeliveryAddressToOrder(AddressVM address);
@@ -43,8 +41,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
         IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0);
         IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0);
         IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0);
-        IEnumerable<Order> GetOrdersForUser(int userId = 0);
-        IEnumerable<Order> GetOrdersForAnonymousUser(string token = "");
+        IEnumerable<Order> GetOrdersForUser(int userId = 0, int offset = 0, int limit = 0);
+        IEnumerable<Order> GetOrdersForAnonymousUser(string token = "", int offset = 0, int limit = 0);
 
         bool UpdateShipping(int shippingId, int userId);
         bool UpdateShipping(int shippingId, string token);

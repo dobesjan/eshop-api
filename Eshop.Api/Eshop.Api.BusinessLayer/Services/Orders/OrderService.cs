@@ -74,7 +74,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		{
 			if (!_ordersRepository.IsStored(orderId))
 			{
-				throw new InvalidDataException("Order not found in db!");
+				throw new InvalidDataException("Order not found!");
 			}
 		}
 
@@ -134,14 +134,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return order;
 		}
 
-		public IEnumerable<Order> GetOrdersForAnonymousUser(string token = "")
+		public IEnumerable<Order> GetOrdersForAnonymousUser(string token = "", int offset = 0, int limit = 0)
 		{
 			if (token == String.Empty)
 			{
 				throw new InvalidDataException("Wrong token!");
 			}
 
-			var orders = _ordersRepository.GetOrdersForAnonymousUser(token);
+			var orders = _ordersRepository.GetOrdersForAnonymousUser(token, offset, limit);
 			if (orders == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -150,14 +150,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return orders;
 		}
 
-		public IEnumerable<Order> GetOrdersForUser(int userId = 0)
+		public IEnumerable<Order> GetOrdersForUser(int userId = 0, int offset = 0, int limit = 0)
 		{
 			if (userId <= 0)
 			{
 				throw new InvalidDataException("Wrong user!");
 			}
 
-			var orders = _ordersRepository.GetOrdersForUser(userId);
+			var orders = _ordersRepository.GetOrdersForUser(userId, offset, limit);
 			if (orders == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -185,29 +185,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		{
 			if (order == null) throw new ArgumentNullException("Order is null");
 			order.Validate();
-
-			if (order.Id > 0)
-			{
-				var selectedOrder = GetOrder(order.Id);
-
-				if (selectedOrder == null) throw new InvalidDataException($"Order with id: {order.Id} not found in db!");
-				if (selectedOrder.IsOrdered) throw new InvalidDataException($"Order with id: {order.Id} was already sent!");
-
-				_ordersRepository.Update(order);
-				_ordersRepository.Save();
-
-				return true;
-			}
-
-			throw new ArgumentNullException("Wrong identifier");
-		}
-
-		public bool UpsertOrder(Order order)
-		{
-			if (order == null) throw new ArgumentNullException("Order is null");
-			order.Validate();
-
-			//return UpsertEntity(order, _ordersRepository);
 
 			if (order.Id > 0)
 			{
@@ -477,17 +454,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		{
 			var cart = GetShoppingCart(token);
 			RemoveProductFromOrderInternal(productId, cart.Id);
-
-			return true;
-		}
-
-		public bool UpdateProductCount(int productId, int count, int orderId)
-		{
-			var product = _orderProductRepository.GetOrderProduct(productId, orderId);
-			if (product == null) throw new InvalidDataException("Product not found");
-
-			product.Count = count;
-			_orderProductRepository.Update(product, true);
 
 			return true;
 		}

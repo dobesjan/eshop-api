@@ -18,7 +18,7 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 		IEnumerable<Order> GetOrders(Expression<Func<Order, bool>>? filter = null, int offset = 0, int limit = 0);
 		IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0);
 		IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0);
-		IEnumerable<Order> GetOrdersForAnonymousUser(string token);
-		IEnumerable<Order> GetOrdersForUser(int userId);
+		IEnumerable<Order> GetOrdersForAnonymousUser(string token, int offset = 0, int limit = 0);
+		IEnumerable<Order> GetOrdersForUser(int userId, int offset = 0, int limit = 0);
 	}
 }

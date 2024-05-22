@@ -20,7 +20,7 @@ namespace Eshop.Api.DataAccess.Repository.Contacts
 
 		public Customer GetCustomer(int id)
 		{
-			return Get(a => a.Id == id, includeProperties: "Person,Address");
+			return Get(a => a.Id == id, includeProperties: _properties);
 		}
 	}
 }

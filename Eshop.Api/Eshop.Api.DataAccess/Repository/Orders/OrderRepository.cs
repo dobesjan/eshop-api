@@ -53,14 +53,14 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 			return GetAll(filter, includeProperties: _orderProperties, offset: offset, limit: limit);
 		}
 
-		public IEnumerable<Order> GetOrdersForAnonymousUser(string token)
+		public IEnumerable<Order> GetOrdersForAnonymousUser(string token, int offset = 0, int limit = 0)
 		{
-			return GetAll(c => c.Token == token, includeProperties: _orderProperties);
+			return GetAll(c => c.Token == token, includeProperties: _orderProperties, offset, limit);
 		}
 
-		public IEnumerable<Order> GetOrdersForUser(int userId)
+		public IEnumerable<Order> GetOrdersForUser(int userId, int offset = 0, int limit = 0)
 		{
-			return GetAll(c => c.UserId == userId, includeProperties: _orderProperties);
+			return GetAll(c => c.UserId == userId, includeProperties: _orderProperties, offset, limit);
 		}
 	}
 }

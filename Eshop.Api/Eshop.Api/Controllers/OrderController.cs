@@ -77,7 +77,7 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpGet("updateStatusForUser")]
-		public IActionResult UpdateStatusForUser(int statusId, string userId)
+		public IActionResult UpdateStatusForUser(int statusId, int userId)
 		{
 			return HandleResponse(() =>
 			{
@@ -97,7 +97,7 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpGet("sendOrderForUser")]
-		public IActionResult SendOrderForUser(string userId)
+		public IActionResult SendOrderForUser(int userId)
 		{
 			return HandleResponse(() =>
 			{
@@ -117,7 +117,7 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpGet("updateShippingForUser")]
-		public IActionResult UpdateShippingForUser(int shippingId, string userId)
+		public IActionResult UpdateShippingForUser(int shippingId, int userId)
 		{
 			return HandleResponse(() =>
 			{
@@ -172,6 +172,46 @@ namespace Eshop.Api.Controllers
 			return HandleResponse(() =>
 			{
 				var orders = _orderService.GetOrdersByFilter(filter);
+				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
+			}, "Orders not found!");
+		}
+
+		[HttpGet("listForAnonymousUser")]
+		public IActionResult ListOrdersForAnonymousUser(string token, int offset, int limit)
+		{
+			return HandleResponse(() =>
+			{
+				var orders = _orderService.GetOrdersForAnonymousUser(token, offset, limit);
+				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
+			}, "Orders not found!");
+		}
+
+		[HttpGet("listForUser")]
+		public IActionResult ListOrdersForUser(int userId, int offset, int limit)
+		{
+			return HandleResponse(() =>
+			{
+				var orders = _orderService.GetOrdersForUser(userId, offset, limit);
+				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
+			}, "Orders not found!");
+		}
+
+		[HttpGet("listByStatus")]
+		public IActionResult ListOrdersByStatus(int orderStatusId, int offset, int limit)
+		{
+			return HandleResponse(() =>
+			{
+				var orders = _orderService.GetOrdersByStatus(orderStatusId, offset, limit);
+				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
+			}, "Orders not found!");
+		}
+
+		[HttpGet("listByShipping")]
+		public IActionResult ListOrdersByShipping(int shippingId, int offset, int limit)
+		{
+			return HandleResponse(() =>
+			{
+				var orders = _orderService.GetOrdersByShipping(shippingId, offset, limit);
 				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
 			}, "Orders not found!");
 		}
