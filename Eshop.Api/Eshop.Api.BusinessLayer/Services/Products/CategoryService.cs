@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.DataAccess.Repository;
+using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Interfaces;
 using Eshop.Api.Models.Products;
@@ -12,16 +13,16 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 {
     public class CategoryService : EshopService, ICategoryService
 	{
-		private IRepository<Category> _categoryRepository;
+		private IUnitOfWork _unitOfWork;
 
-		public CategoryService(IRepository<Category> categoryRepository)
+		public CategoryService(IUnitOfWork unitOfWork)
 		{
-			_categoryRepository = categoryRepository;
+			_unitOfWork = unitOfWork;
 		}
 
 		public IEnumerable<Category> GetCategories()
 		{
-			return _categoryRepository.GetAll();
+			return _unitOfWork.CategoryRepository.GetAll();
 		}
 
 		public Category GetCategory(int id)
@@ -31,7 +32,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 				throw new InvalidDataException($"Wrong value: {id} for category id!");
 			}
 
-			var category = _categoryRepository.Get(c => c.Id == id, includeProperties: "ParentCategory");
+			var category = _unitOfWork.CategoryRepository.Get(c => c.Id == id, includeProperties: "ParentCategory");
 			if (category == null)
 			{
 				throw new InvalidDataException($"Category with id: {id} not found in db!");
@@ -42,7 +43,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 
 		public bool UpsertCategory(Category category)
 		{
-			return UpsertEntity(category, _categoryRepository) != null;
+			return UpsertEntity(category, _unitOfWork.CategoryRepository) != null;
 		}
 	}
 }

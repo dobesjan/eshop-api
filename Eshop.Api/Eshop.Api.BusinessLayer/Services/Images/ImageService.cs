@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.DataAccess.Repository;
+using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.Api.Models.Images;
 using System;
 using System.Collections.Generic;
@@ -10,13 +11,11 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 {
     public class ImageService : EshopService, IImageService
 	{
-		private readonly IRepository<ImageGroup> _imageGroupRepository;
-		private readonly IRepository<Image> _imageRepository;
+		private IUnitOfWork _unitOfWork;
 
-		public ImageService(IRepository<ImageGroup> imageGroupRepository, IRepository<Image> imageRepository)
+		public ImageService(IUnitOfWork unitOfWork)
 		{
-			_imageGroupRepository = imageGroupRepository;
-			_imageRepository = imageRepository;
+			_unitOfWork = unitOfWork;
 		}
 
 		public Image GetImage(int id)
@@ -26,7 +25,7 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 				throw new InvalidDataException("Image not found in db!");
 			}
 
-			var entity = _imageRepository.Get(c => c.Id == id, includeProperties: "ImageGroup");
+			var entity = _unitOfWork.ImageRepository.Get(c => c.Id == id, includeProperties: "ImageGroup");
 			if (entity == null)
 			{
 				throw new InvalidDataException("Image not found in db!");
@@ -42,7 +41,7 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 				throw new InvalidDataException("Image group not found in db!");
 			}
 
-			var entity = _imageGroupRepository.Get(c => c.Id == id);
+			var entity = _unitOfWork.ImageGroupRepository.Get(c => c.Id == id);
 			if (entity == null)
 			{
 				throw new InvalidDataException("Image group not found in db!");
@@ -53,7 +52,7 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 
 		public IEnumerable<ImageGroup> GetImageGroups()
 		{
-			return _imageGroupRepository.GetAll();
+			return _unitOfWork.ImageGroupRepository.GetAll();
 		}
 
 		public IEnumerable<Image> GetImages(int offset = 0, int limit = 0, int imageGroupId = 0)
@@ -62,11 +61,11 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 
 			if (limit > 0)
 			{
-				images = _imageRepository.GetAll(offset: offset, limit: limit, includeProperties: "ImageGroup");
+				images = _unitOfWork.ImageRepository.GetAll(offset: offset, limit: limit, includeProperties: "ImageGroup");
 			}
 			else
 			{
-				images = _imageRepository.GetAll(includeProperties: "ImageGroup");
+				images = _unitOfWork.ImageRepository.GetAll(includeProperties: "ImageGroup");
 			}
 
 			if (imageGroupId > 0)
@@ -79,12 +78,12 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 
 		public bool UpsertImage(Image image)
 		{
-			return UpsertEntity(image, _imageRepository) != null;
+			return UpsertEntity(image, _unitOfWork.ImageRepository) != null;
 		}
 
 		public bool UpsertImageGroup(ImageGroup imageGroup)
 		{
-			return UpsertEntity(imageGroup, _imageGroupRepository) != null;
+			return UpsertEntity(imageGroup, _unitOfWork.ImageGroupRepository) != null;
 		}
 	}
 }

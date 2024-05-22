@@ -8,6 +8,7 @@ using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Contacts;
 using Eshop.Api.DataAccess.Repository.Currencies;
 using Eshop.Api.DataAccess.Repository.Orders;
+using Eshop.Api.DataAccess.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,16 +20,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
-builder.Services.AddScoped<ICurrencyPreferenceRepository, CurrencyPreferenceRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IAddressRepository, AddressRepository>();
-builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-builder.Services.AddScoped<IOrderProductRepository, OrderProductRepository>();
-builder.Services.AddScoped<IShippingRepository, ShippingRepository>();
-builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
-
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //TODO: Consider how to refactor
 builder.Services.AddScoped<IEshopService, EshopService>();

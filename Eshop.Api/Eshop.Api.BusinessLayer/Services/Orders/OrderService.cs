@@ -2,6 +2,7 @@
 using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Contacts;
 using Eshop.Api.DataAccess.Repository.Orders;
+using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
@@ -20,59 +21,19 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 {
     public class OrderService : EshopService, IOrderService
 	{
-		private readonly IOrderRepository _ordersRepository;
-		private readonly IRepository<OrderStatus> _ordersStatusRepository;
-		private readonly IOrderProductRepository _orderProductRepository;
-
-		private readonly IShippingRepository _shippingRepository;
-		private readonly IRepository<ShippingPaymentMethod> _shippingPaymentMethodRepository;
-
-		private readonly IRepository<Payment> _paymentRepository;
-		private readonly IPaymentMethodRepository _paymentMethodRepository;
-		private readonly IRepository<PaymentStatus> _paymentStatusRepository;
-
-		private readonly IAddressRepository _addressRepository;
-		private readonly IRepository<Person> _personRepository;
-		private readonly ICustomerRepository _customerRepository;
-
-		private readonly IRepository<Product> _productRepository;
-
+		private readonly IUnitOfWork _unitOfWork;
 		private readonly ICurrencyService _currencyService;
 
-		public OrderService(
-			IOrderRepository ordersRepository,
-			IRepository<OrderStatus> ordersStatusRepository,
-			IOrderProductRepository orderProductRepository,
-			IShippingRepository shippingRepository,
-			IRepository<ShippingPaymentMethod> shippingPaymentMethodRepository,
-			IRepository<Payment> paymentRepository,
-			IPaymentMethodRepository paymentMethodRepository,
-			IRepository<PaymentStatus> paymentStatusRepository,
-			IAddressRepository addressRepository,
-			IRepository<Person> personRepository,
-			ICustomerRepository customerRepository,
-			IRepository<Product> productRepository,
-			ICurrencyService currencyService)
+		public OrderService(IUnitOfWork unitOfWork, ICurrencyService currencyService)
 		{
-			_ordersRepository = ordersRepository;
-			_ordersStatusRepository = ordersStatusRepository;
-			_orderProductRepository = orderProductRepository;
-			_shippingRepository = shippingRepository;
-			_shippingPaymentMethodRepository = shippingPaymentMethodRepository;
-			_paymentRepository = paymentRepository;
-			_paymentMethodRepository = paymentMethodRepository;
-			_paymentStatusRepository = paymentStatusRepository;
-			_addressRepository = addressRepository;
-			_personRepository = personRepository;
-			_customerRepository = customerRepository;
-			_productRepository = productRepository;
+			_unitOfWork = unitOfWork;
 			_currencyService = currencyService;
 		}
 
 		#region Order
 		private void CheckOrderIsStored(int orderId)
 		{
-			if (!_ordersRepository.IsStored(orderId))
+			if (!_unitOfWork.OrderRepository.IsStored(orderId))
 			{
 				throw new InvalidDataException("Order not found!");
 			}
@@ -80,14 +41,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		private bool UpdateOrderStatusInternal(int statusId, Order order)
 		{
-			if (!_ordersStatusRepository.IsStored(statusId))
+			if (!_unitOfWork.OrderStatusRepository.IsStored(statusId))
 			{
 				throw new InvalidDataException("Wrong order status");
 			}
 
 			order.OrderStatusId = statusId;
-			_ordersRepository.Update(order);
-			_ordersRepository.Save();
+			_unitOfWork.OrderRepository.Update(order);
+			_unitOfWork.OrderRepository.Save();
 
 			return true;
 		}
@@ -99,7 +60,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			order.SentTime = DateTime.UtcNow;
 			order.IsOrdered = true;
 
-			_ordersRepository.Update(order);
+			_unitOfWork.OrderRepository.Update(order);
 			return true;
 		}
 
@@ -108,14 +69,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (order == null) throw new ArgumentNullException("Order is null");
 			order.Validate();
 
-			_ordersRepository.Add(order);
-			_ordersRepository.Save();
+			_unitOfWork.OrderRepository.Add(order);
+			_unitOfWork.OrderRepository.Save();
 			return true;
 		}
 
 		public IEnumerable<Order> GetOrders(int offset = 0, int limit = 0)
 		{
-			return _ordersRepository.GetOrders(offset, limit);
+			return _unitOfWork.OrderRepository.GetOrders(offset, limit);
 		}
 
 		public Order GetOrder(int orderId = 0)
@@ -125,7 +86,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Order not found in db!");
 			}
 
-			var order = _ordersRepository.GetOrder(orderId);
+			var order = _unitOfWork.OrderRepository.GetOrder(orderId);
 			if (order == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -141,7 +102,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Wrong token!");
 			}
 
-			var orders = _ordersRepository.GetOrdersForAnonymousUser(token, offset, limit);
+			var orders = _unitOfWork.OrderRepository.GetOrdersForAnonymousUser(token, offset, limit);
 			if (orders == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -157,7 +118,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Wrong user!");
 			}
 
-			var orders = _ordersRepository.GetOrdersForUser(userId, offset, limit);
+			var orders = _unitOfWork.OrderRepository.GetOrdersForUser(userId, offset, limit);
 			if (orders == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -193,8 +154,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				if (selectedOrder == null) throw new InvalidDataException($"Order with id: {order.Id} not found in db!");
 				if (selectedOrder.IsOrdered) throw new InvalidDataException($"Order with id: {order.Id} was already sent!");
 
-				_ordersRepository.Update(order);
-				_ordersRepository.Save();
+				_unitOfWork.OrderRepository.Update(order);
+				_unitOfWork.OrderRepository.Save();
 
 				return true;
 			}
@@ -204,7 +165,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public Order GetShoppingCart(int userId)
 		{
-			var cart = _ordersRepository.GetShoppingCart(userId);
+			var cart = _unitOfWork.OrderRepository.GetShoppingCart(userId);
 			if (cart != null) return cart;
 
 			var currency = _currencyService.GetPreferedCurrency(userId);
@@ -218,12 +179,12 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				CurrencyId = currency.Id
 			};
 
-			return _ordersRepository.Add(cart, true);
+			return _unitOfWork.OrderRepository.Add(cart, true);
 		}
 
 		public Order GetShoppingCart(string token)
 		{
-			var cart = _ordersRepository.GetShoppingCart(token);
+			var cart = _unitOfWork.OrderRepository.GetShoppingCart(token);
 			if (cart != null) return cart;
 
 			var currency = _currencyService.GetPreferedCurrency(token);
@@ -237,7 +198,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				CurrencyId = currency.Id
 			};
 
-			return _ordersRepository.Add(cart, true);
+			return _unitOfWork.OrderRepository.Add(cart, true);
 		}
 
 		public bool UpdateOrderStatus(int statusId, int userId)
@@ -258,7 +219,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0)
 		{
-			return _ordersRepository.GetOrdersByStatus(orderStatusId, offset, limit);
+			return _unitOfWork.OrderRepository.GetOrdersByStatus(orderStatusId, offset, limit);
 		}
 
 		#endregion
@@ -288,19 +249,19 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			if (order.AddressId.HasValue && order.AddressId > 0)
 			{
-				selectedAddress = _addressRepository.GetAddress(order.AddressId.Value);
+				selectedAddress = _unitOfWork.AddressRepository.GetAddress(order.AddressId.Value);
 				if (selectedAddress != null)
 				{
 					address.Address.Id = selectedAddress.Id;
 				}
 			}
 
-			selectedAddress = UpsertEntity(address.Address, _addressRepository);
+			selectedAddress = UpsertEntity(address.Address, _unitOfWork.AddressRepository);
 
 			if (selectedAddress != null)
 			{
 				order.AddressId = selectedAddress.Id;
-				_ordersRepository.Update(order, true);
+				_unitOfWork.OrderRepository.Update(order, true);
 
 				return true;
 			}
@@ -334,7 +295,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			if (order.CustomerId.HasValue && order.CustomerId > 0)
 			{
-				var selectedCustomer = _customerRepository.GetCustomer(order.CustomerId.Value);
+				var selectedCustomer = _unitOfWork.CustomerRepository.GetCustomer(order.CustomerId.Value);
 				if (selectedCustomer != null)
 				{
 					customerVM.Customer.Id = selectedCustomer.Id;
@@ -348,14 +309,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			customerVM.Customer.Person.Validate();
 			customerVM.Customer.Address.Validate();
 
-			var person = UpsertEntity(customerVM.Customer.Person, _personRepository);
-			var address = UpsertEntity(customerVM.Customer.Address, _addressRepository);
+			var person = UpsertEntity(customerVM.Customer.Person, _unitOfWork.PersonRepository);
+			var address = UpsertEntity(customerVM.Customer.Address, _unitOfWork.AddressRepository);
 			if (person == null) throw new ArgumentNullException("Error storing person");
 			if (address == null) throw new ArgumentNullException("Error storing address");
 
-			var customer = UpsertEntity(customerVM.Customer, _customerRepository);
+			var customer = UpsertEntity(customerVM.Customer, _unitOfWork.CustomerRepository);
 			order.CustomerId = customer.Id;
-			_ordersRepository.Update(order, true);
+			_unitOfWork.OrderRepository.Update(order, true);
 
 			return true;
 		}
@@ -366,7 +327,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		private bool CreateProductToOrderRelation(int productId, int count, Order order)
 		{
 			if (count <= 0) throw new InvalidDataException("Count must be higher than 0");
-			var relation = _orderProductRepository.GetOrderProduct(productId, order.Id);
+			var relation = _unitOfWork.OrderProductRepository.GetOrderProduct(productId, order.Id);
 
 			if (relation != null)
 			{
@@ -375,7 +336,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				relation.CurrencyId = order.CurrencyId;
 				relation.Count = count;
 
-				_orderProductRepository.Update(relation, true);
+				_unitOfWork.OrderProductRepository.Update(relation, true);
 			}
 			else
 			{
@@ -386,7 +347,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 					CurrencyId = order.CurrencyId,
 					Count = count
 				};
-				_orderProductRepository.Add(product, true);
+				_unitOfWork.OrderProductRepository.Add(product, true);
 			}
 
 			return true;
@@ -394,11 +355,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		private bool RemoveProductFromOrderInternal(int productId, int orderId)
 		{
-			var product = _orderProductRepository.GetOrderProduct(productId, orderId);
+			var product = _unitOfWork.OrderProductRepository.GetOrderProduct(productId, orderId);
 			if (product == null) throw new InvalidDataException("Product not found");
 
-			_orderProductRepository.Remove(product);
-			_orderProductRepository.Save();
+			_unitOfWork.OrderProductRepository.Remove(product);
+			_unitOfWork.OrderProductRepository.Save();
 
 			return true;
 		}
@@ -416,7 +377,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool AddProductToOrder(int productId, int userId, int count)
 		{
-			if (!_productRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
+			if (!_unitOfWork.ProductRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
 
 			var cart = GetShoppingCart(userId);
 			return CreateProductToOrderRelation(productId, count, cart);
@@ -424,7 +385,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool AddProductToOrder(int productId, string token, int count)
 		{
-			if (!_productRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
+			if (!_unitOfWork.ProductRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
 
 			var cart = GetShoppingCart(token);
 			return CreateProductToOrderRelation(productId, count, cart);
@@ -465,7 +426,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		{
 			var order = GetOrder(orderId);
 			if (!order.ShippingId.HasValue) throw new InvalidDataException("Shipping method not provided");
-			var shipping = _shippingRepository.GetEnabledShipping(order.ShippingId.Value);
+			var shipping = _unitOfWork.ShippingRepository.GetEnabledShipping(order.ShippingId.Value);
 			if (shipping != null 
 				&& shipping.ShippingPaymentMethod != null 
 				&& shipping.ShippingPaymentMethod.Exists(sp => sp.PaymentMethodId == paymentId)) throw new InvalidDataException("Payment not supported in provided shipping");
@@ -473,18 +434,18 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool UpsertOrderPayment(Payment payment)
 		{
-			if (!_paymentMethodRepository.IsPaymentMethodEnabled(payment.PaymentMethodId)) throw new InvalidDataException("Payment method not supported");
-			if (!_paymentStatusRepository.IsStored(payment.PaymentStatusId)) throw new InvalidDataException($"Wrong payment status with id {payment.PaymentStatusId}");
+			if (!_unitOfWork.PaymentMethodRepository.IsPaymentMethodEnabled(payment.PaymentMethodId)) throw new InvalidDataException("Payment method not supported");
+			if (!_unitOfWork.PaymentStatusRepository.IsStored(payment.PaymentStatusId)) throw new InvalidDataException($"Wrong payment status with id {payment.PaymentStatusId}");
 
 			CheckIfShippingSupportsPaymentMethod(payment.Id, payment.OrderId);
 			CheckOrderIsStored(payment.OrderId);
-			return UpsertEntity(payment, _paymentRepository) != null;
+			return UpsertEntity(payment, _unitOfWork.PaymentRepository) != null;
 		}
 
 		public IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId)
 		{
 			//TODO: Fix
-			return _paymentMethodRepository.GetAll(pm => pm.ShippingPaymentMethod != null && pm.ShippingPaymentMethod.Exists(s => s.ShippingId == shippingId), includeProperties: "ShippingPaymentMethod");
+			return _unitOfWork.PaymentMethodRepository.GetAll(pm => pm.ShippingPaymentMethod != null && pm.ShippingPaymentMethod.Exists(s => s.ShippingId == shippingId), includeProperties: "ShippingPaymentMethod");
 		}
 
 		#endregion
@@ -493,13 +454,13 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public bool UpdateShippingInternal(int shippingId, Order order)
 		{
-			var shipping = _shippingRepository.GetEnabledShipping(shippingId);
+			var shipping = _unitOfWork.ShippingRepository.GetEnabledShipping(shippingId);
 			if (shipping != null) throw new InvalidDataException("Shipping not supported");
 
             order.ShippingId = shippingId;
 
-			_ordersRepository.Update(order);
-			_ordersRepository.Save();
+			_unitOfWork.OrderRepository.Update(order);
+			_unitOfWork.OrderRepository.Save();
 
             return true;
 		}
@@ -526,11 +487,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			if (shippingId > 0)
 			{
-				orders = _ordersRepository.GetOrdersByShipping(shippingId, offset: offset, limit: limit);
+				orders = _unitOfWork.OrderRepository.GetOrdersByShipping(shippingId, offset: offset, limit: limit);
 			}
 			else
 			{
-				orders = _ordersRepository.GetOrders(offset: offset, limit: limit);
+				orders = _unitOfWork.OrderRepository.GetOrders(offset: offset, limit: limit);
 			}
 
 			if (orders == null)
@@ -609,13 +570,13 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			if (!expressions.Any())
 			{
-				return _ordersRepository.GetOrders(offset: offset, limit: limit);
+				return _unitOfWork.OrderRepository.GetOrders(offset: offset, limit: limit);
 			}
 
 			var body = expressions.Aggregate(Expression.AndAlso);
 			var predicate = Expression.Lambda<Func<Order, bool>>(body, parameter);
 
-			return _ordersRepository.GetOrders(predicate, offset, limit);
+			return _unitOfWork.OrderRepository.GetOrders(predicate, offset, limit);
 		}
 
 

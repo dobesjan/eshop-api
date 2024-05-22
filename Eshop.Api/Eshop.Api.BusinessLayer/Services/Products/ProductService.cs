@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.DataAccess.Repository;
+using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.Api.Models;
 using Eshop.Api.Models.Images;
 using Eshop.Api.Models.Products;
@@ -12,50 +13,33 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 {
     public class ProductService : EshopService, IProductService
 	{
-		private readonly IRepository<Category> _categoryRepository;
-		private readonly IRepository<Product> _productRepository;
-		private readonly IRepository<ProductCategory> _productCategoryRepository;
-		private readonly IRepository<Image> _imageRepository;
-		private readonly IRepository<ProductImage> _productImageRepository;
-		private readonly IRepository<ProductPriceList> _productPriceListRepository;
+		private readonly IUnitOfWork _unitOfWork;
 		private readonly string _properties = "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency";
 
-		public ProductService(
-			IRepository<Category> categoryRepository,
-			IRepository<Product> productRepository,
-			IRepository<ProductCategory> productCategoryRepository,
-			IRepository<Image> imageRepository,
-			IRepository<ProductImage> productImageRepository,
-			IRepository<ProductPriceList> productPriceListRepository
-			)
+		public ProductService(IUnitOfWork unitOfWork)
 		{
-			_categoryRepository = categoryRepository;
-			_productRepository = productRepository;
-			_productCategoryRepository = productCategoryRepository;
-			_imageRepository = imageRepository;
-			_productImageRepository = productImageRepository;
-			_productPriceListRepository = productPriceListRepository;
+			_unitOfWork = unitOfWork;
 		}
 
 		//TODO: Consider refactor (merge all of these types of methods to one).
 		public bool AddProductToCategory(ProductCategory category)
 		{
-			if (!_productRepository.IsStored(category.ProductId))
+			if (!_unitOfWork.ProductRepository.IsStored(category.ProductId))
 			{
 				throw new InvalidDataException("Product not found in db!");
 			}
 
-			if (!_categoryRepository.IsStored(category.CategoryId))
+			if (!_unitOfWork.CategoryRepository.IsStored(category.CategoryId))
 			{
 				throw new InvalidDataException("Category not found in db!");
 			}
 
-			if (_productCategoryRepository.IsStored(category.Id))
+			if (_unitOfWork.ProductCategoryRepository.IsStored(category.Id))
 			{
 				return true;
 			}
 
-			return UpsertEntity(category, _productCategoryRepository) != null;
+			return UpsertEntity(category, _unitOfWork.ProductCategoryRepository) != null;
 		}
 
 		public Product GetProduct(int id)
@@ -65,7 +49,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 				throw new InvalidDataException("Product not found in db!");
 			}
 
-			var product = _productRepository.Get(c => c.Id == id, includeProperties: _properties);
+			var product = _unitOfWork.ProductRepository.Get(c => c.Id == id, includeProperties: _properties);
 			if (product == null)
 			{
 				throw new InvalidDataException("Product not found in db!");
@@ -81,11 +65,11 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 
 			if (categoryId > 0)
 			{
-				products = _productRepository.GetAll(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId), includeProperties: _properties, offset: offset, limit: limit);
+				products = _unitOfWork.ProductRepository.GetAll(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId), includeProperties: _properties, offset: offset, limit: limit);
 			}
 			else
 			{
-				products = _productRepository.GetAll(includeProperties: _properties, offset: offset, limit: limit);
+				products = _unitOfWork.ProductRepository.GetAll(includeProperties: _properties, offset: offset, limit: limit);
 			}
 
 			if (products == null)
@@ -98,17 +82,17 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 		//TODO: Consider refactor (merge all of these types of methods to one).
 		public bool LinkImageToProduct(int productId, int imageId)
 		{
-			if (!_productRepository.IsStored(productId))
+			if (!_unitOfWork.ProductRepository.IsStored(productId))
 			{
 				throw new InvalidDataException("Product not found in db!");
 			}
 
-			if (!_imageRepository.IsStored(imageId))
+			if (!_unitOfWork.ImageRepository.IsStored(imageId))
 			{
 				throw new InvalidDataException("Image not found in db!");
 			}
 
-			var productImage = _productImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
+			var productImage = _unitOfWork.ProductImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
 			if (productImage == null)
 			{
 				var link = new ProductImage
@@ -117,8 +101,8 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 					ImageId = imageId
 				};
 
-				_productImageRepository.Add(link);
-				_productImageRepository.Save();
+				_unitOfWork.ProductImageRepository.Add(link);
+				_unitOfWork.ProductImageRepository.Save();
 			}
 
 			return true;
@@ -127,11 +111,11 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 		//TODO: Consider refactor (merge all of these types of methods to one).
 		public bool UnlinkImageFromProduct(int productId, int imageId)
 		{
-			var productImage = _productImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
+			var productImage = _unitOfWork.ProductImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
 			if (productImage != null)
 			{
-				_productImageRepository.Remove(productImage);
-				_productImageRepository.Save();
+				_unitOfWork.ProductImageRepository.Remove(productImage);
+				_unitOfWork.ProductImageRepository.Save();
 			}
 			
 			return true;
@@ -139,12 +123,12 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 
 		public bool UpsertProduct(Product product)
 		{
-			return UpsertEntity(product, _productRepository) != null;
+			return UpsertEntity(product, _unitOfWork.ProductRepository) != null;
 		}
 
 		public bool UpsertProductPrice(ProductPriceList productPriceList)
 		{
-			return UpsertEntity(productPriceList, _productPriceListRepository) != null;
+			return UpsertEntity(productPriceList, _unitOfWork.ProductPriceListRepository) != null;
 		}
 	}
 }
