@@ -71,7 +71,7 @@ namespace Eshop.Api.DataAccess.Repository
 			{
 				//Db will not be automatically updated on entity change
 				query = dbset.AsNoTracking();
-			}
+			} 
 
 			if (!string.IsNullOrEmpty(includeProperties))
 			{
@@ -108,6 +108,15 @@ namespace Eshop.Api.DataAccess.Repository
 			}
 
 			return query.ToList();
+		}
+
+		public int Count(Expression<Func<T, bool>>? filter = null)
+		{
+			if (filter != null)
+			{
+				return dbset.Count(filter);
+			}
+			return dbset.Count();
 		}
 
 		public void Remove(T entity)
