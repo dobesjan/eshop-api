@@ -25,7 +25,7 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 				throw new InvalidDataException("Image not found in db!");
 			}
 
-			var entity = _unitOfWork.ImageRepository.Get(c => c.Id == id, includeProperties: "ImageGroup");
+			var entity = _unitOfWork.ImageRepository.Get(id, includeProperties: "ImageGroup");
 			if (entity == null)
 			{
 				throw new InvalidDataException("Image not found in db!");
@@ -41,7 +41,7 @@ namespace Eshop.Api.BusinessLayer.Services.Images
 				throw new InvalidDataException("Image group not found in db!");
 			}
 
-			var entity = _unitOfWork.ImageGroupRepository.Get(c => c.Id == id);
+			var entity = _unitOfWork.ImageGroupRepository.Get(id);
 			if (entity == null)
 			{
 				throw new InvalidDataException("Image group not found in db!");

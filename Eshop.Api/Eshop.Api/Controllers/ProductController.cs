@@ -42,6 +42,16 @@ namespace Eshop.Api.Controllers
 			}, "Problem while retrieving products!");
 		}
 
+		[HttpGet("getProductsCount")]
+		public IActionResult ListProducts(int categoryId = 0)
+		{
+			return HandleResponse(() =>
+			{
+				var count = _productService.GetProductsCount(categoryId);
+				return CreateResult(success: true, data: new { count = count });
+			}, "Problem while retrieving products!");
+		}
+
 		[HttpPost("upsert")]
 		public IActionResult UpsertProduct([FromBody] Product product)
 		{

@@ -3,6 +3,7 @@ using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Contacts;
 using Eshop.Api.DataAccess.Repository.Currencies;
 using Eshop.Api.DataAccess.Repository.Orders;
+using Eshop.Api.DataAccess.Repository.Products;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Images;
 using Eshop.Api.Models.Orders;
@@ -18,9 +19,9 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 	public interface IUnitOfWork
 	{
 		IRepository<Category> CategoryRepository { get; }
-		IRepository<Product> ProductRepository { get; }
+		IProductRepository ProductRepository { get; }
 		IRepository<ProductCategory> ProductCategoryRepository { get; }
-		IRepository<ProductImage> ProductImageRepository { get; }
+		IProductImageRepository ProductImageRepository { get; }
 		IRepository<ProductPriceList> ProductPriceListRepository { get; }
 
 		IRepository<ImageGroup> ImageGroupRepository { get; }

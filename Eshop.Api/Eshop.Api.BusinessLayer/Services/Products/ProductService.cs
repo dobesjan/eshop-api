@@ -14,7 +14,6 @@ namespace Eshop.Api.BusinessLayer.Services.Products
     public class ProductService : EshopService, IProductService
 	{
 		private readonly IUnitOfWork _unitOfWork;
-		private readonly string _properties = "ProductCategories.Category,ProductImages.Image,ProductPrices,ProductPrices.Currency";
 
 		public ProductService(IUnitOfWork unitOfWork)
 		{
@@ -49,7 +48,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 				throw new InvalidDataException("Product not found in db!");
 			}
 
-			var product = _unitOfWork.ProductRepository.Get(c => c.Id == id, includeProperties: _properties);
+			var product = _unitOfWork.ProductRepository.GetProduct(id);
 			if (product == null)
 			{
 				throw new InvalidDataException("Product not found in db!");
@@ -65,11 +64,11 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 
 			if (categoryId > 0)
 			{
-				products = _unitOfWork.ProductRepository.GetAll(p => p.ProductCategories != null && p.ProductCategories.Any(pc => pc.CategoryId == categoryId), includeProperties: _properties, offset: offset, limit: limit);
+				products = _unitOfWork.ProductRepository.GetProductsByCategory(categoryId, offset, limit);
 			}
 			else
 			{
-				products = _unitOfWork.ProductRepository.GetAll(includeProperties: _properties, offset: offset, limit: limit);
+				products = _unitOfWork.ProductRepository.GetProducts(offset, limit);
 			}
 
 			if (products == null)
@@ -77,6 +76,11 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 				throw new ArgumentNullException($"Products for category {categoryId} with offset {offset} and limit {limit} are null!");
 			}
 			return products;
+		}
+
+		public int GetProductsCount(int categoryId = 0)
+		{
+			return _unitOfWork.ProductRepository.GetProductsCount(categoryId);
 		}
 
 		//TODO: Consider refactor (merge all of these types of methods to one).
@@ -92,7 +96,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 				throw new InvalidDataException("Image not found in db!");
 			}
 
-			var productImage = _unitOfWork.ProductImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
+			var productImage = _unitOfWork.ProductImageRepository.Get(productId, imageId);
 			if (productImage == null)
 			{
 				var link = new ProductImage
@@ -111,7 +115,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 		//TODO: Consider refactor (merge all of these types of methods to one).
 		public bool UnlinkImageFromProduct(int productId, int imageId)
 		{
-			var productImage = _unitOfWork.ProductImageRepository.Get(pi => pi.ProductId == productId && pi.ImageId == imageId);
+			var productImage = _unitOfWork.ProductImageRepository.Get(productId, imageId);
 			if (productImage != null)
 			{
 				_unitOfWork.ProductImageRepository.Remove(productImage);

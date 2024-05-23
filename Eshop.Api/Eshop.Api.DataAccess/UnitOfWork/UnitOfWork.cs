@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Eshop.Api.DataAccess.Repository.Products;
 
 namespace Eshop.Api.DataAccess.UnitOfWork
 {
@@ -20,9 +21,9 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 		private ApplicationDbContext _context;
 
 		public IRepository<Category> CategoryRepository { get; private set; }
-		public IRepository<Product> ProductRepository { get; private set; }
+		public IProductRepository ProductRepository { get; private set; }
 		public IRepository<ProductCategory> ProductCategoryRepository { get; private set; }
-		public IRepository<ProductImage> ProductImageRepository { get; private set; }
+		public IProductImageRepository ProductImageRepository { get; private set; }
 		public IRepository<ProductPriceList> ProductPriceListRepository { get; private set; }
 
 		public IRepository<ImageGroup> ImageGroupRepository { get; private set; }
@@ -49,9 +50,9 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 		{
 			_context = context;
 			CategoryRepository = new Repository<Category>(context);
-			ProductRepository = new Repository<Product>(context);
+			ProductRepository = new ProductRepository(context);
 			ProductCategoryRepository = new Repository<ProductCategory>(context);
-			ProductImageRepository = new Repository<ProductImage>(context);
+			ProductImageRepository = new ProductImageRepository(context);
 			ProductPriceListRepository = new Repository<ProductPriceList>(context);
 
 			ImageGroupRepository = new Repository<ImageGroup>(context);

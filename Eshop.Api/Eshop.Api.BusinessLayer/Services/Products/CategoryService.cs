@@ -32,7 +32,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 				throw new InvalidDataException($"Wrong value: {id} for category id!");
 			}
 
-			var category = _unitOfWork.CategoryRepository.Get(c => c.Id == id, includeProperties: "ParentCategory");
+			var category = _unitOfWork.CategoryRepository.Get(id, includeProperties: "ParentCategory");
 			if (category == null)
 			{
 				throw new InvalidDataException($"Category with id: {id} not found in db!");

@@ -12,6 +12,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
     public interface IProductService : IEshopService
     {
         IEnumerable<Product> GetProducts(int offset = 0, int limit = 0, int categoryId = 0);
+        int GetProductsCount(int categoryId = 0);
         Product GetProduct(int id);
         bool UpsertProduct(Product product);
         bool UpsertProductPrice(ProductPriceList productPriceList);
