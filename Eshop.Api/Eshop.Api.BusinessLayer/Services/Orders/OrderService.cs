@@ -79,6 +79,16 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return _unitOfWork.OrderRepository.GetOrders(offset, limit);
 		}
 
+		public int GetOrdersCount()
+		{
+			return _unitOfWork.OrderRepository.GetOrdersCount();
+		}
+
+		public int GetOrdersCount(Expression<Func<Order, bool>>? filter = null)
+		{
+			return _unitOfWork.OrderRepository.GetOrdersCount(filter);
+		}
+
 		public Order GetOrder(int orderId = 0)
 		{
 			if (orderId <= 0)
@@ -111,6 +121,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return orders;
 		}
 
+		public int GetOrdersCountForAnonymousUser(string token)
+		{
+			return _unitOfWork.OrderRepository.GetOrdersCountForAnonymousUser(token);
+		}
+
 		public IEnumerable<Order> GetOrdersForUser(int userId = 0, int offset = 0, int limit = 0)
 		{
 			if (userId <= 0)
@@ -126,6 +141,12 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			return orders;
 		}
+
+		public int GetOrdersCountForUser(int userId)
+		{
+			return _unitOfWork.OrderRepository.GetOrdersCountForUser(userId);
+		}
+
 		public bool SendOrder(string token)
 		{
 			var order = GetShoppingCart(token);
@@ -220,6 +241,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		public IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0)
 		{
 			return _unitOfWork.OrderRepository.GetOrdersByStatus(orderStatusId, offset, limit);
+		}
+
+		public int GetOrdersCountByStatus(int orderStatusId)
+		{
+			return _unitOfWork.OrderRepository.GetOrdersCountByStatus(orderStatusId);
 		}
 
 		#endregion
@@ -501,10 +527,15 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return orders;
 		}
 
+		public int GetOrdersCountByShipping(int shippingId)
+		{
+			return _unitOfWork.OrderRepository.GetOrdersCountByShipping(shippingId);
+		}
+
 		#endregion
 
 		#region Filtering
-		public IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0)
+		private Expression<Func<Order, bool>> GetOrdersFilteringExpression(OrderFilter filter)
 		{
 			if (filter == null) throw new ArgumentNullException(nameof(filter));
 
@@ -570,15 +601,36 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			if (!expressions.Any())
 			{
-				return _unitOfWork.OrderRepository.GetOrders(offset: offset, limit: limit);
+				return null;
 			}
 
 			var body = expressions.Aggregate(Expression.AndAlso);
-			var predicate = Expression.Lambda<Func<Order, bool>>(body, parameter);
-
-			return _unitOfWork.OrderRepository.GetOrders(predicate, offset, limit);
+			return Expression.Lambda<Func<Order, bool>>(body, parameter);
 		}
 
+		public IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0)
+		{
+			var expression = GetOrdersFilteringExpression(filter);
+
+			if (expression == null)
+			{
+				return _unitOfWork.OrderRepository.GetOrders(offset: offset, limit: limit);
+			}
+
+			return _unitOfWork.OrderRepository.GetOrders(expression, offset, limit);
+		}
+
+		public int GetOrdersByFilterCount(OrderFilter filter)
+		{
+			var expression = GetOrdersFilteringExpression(filter);
+
+			if (expression == null)
+			{
+				return _unitOfWork.OrderRepository.Count();
+			}
+
+			return _unitOfWork.OrderRepository.Count(expression);
+		}
 
 		#endregion
 	}

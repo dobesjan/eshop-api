@@ -38,13 +38,20 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
         Order GetShoppingCart(int userId);
         Order GetShoppingCart(string token);
         IEnumerable<Order> GetOrders(int offset = 0, int limit = 0);
-        IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0);
-        IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0);
-        IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0);
-        IEnumerable<Order> GetOrdersForUser(int userId = 0, int offset = 0, int limit = 0);
-        IEnumerable<Order> GetOrdersForAnonymousUser(string token = "", int offset = 0, int limit = 0);
+		int GetOrdersCount();
+		int GetOrdersCount(Expression<Func<Order, bool>>? filter = null);
+		IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0);
+		int GetOrdersCountByShipping(int shippingId);
+		IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0);
+		int GetOrdersCountByStatus(int orderStatusId);
+		IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0);
+        int GetOrdersByFilterCount(OrderFilter filter);
+		IEnumerable<Order> GetOrdersForUser(int userId = 0, int offset = 0, int limit = 0);
+		int GetOrdersCountForUser(int userId);
+		IEnumerable<Order> GetOrdersForAnonymousUser(string token = "", int offset = 0, int limit = 0);
+		int GetOrdersCountForAnonymousUser(string token);
 
-        bool UpdateShipping(int shippingId, int userId);
+		bool UpdateShipping(int shippingId, int userId);
         bool UpdateShipping(int shippingId, string token);
     }
 }

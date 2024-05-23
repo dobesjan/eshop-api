@@ -15,10 +15,16 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 		Order GetShoppingCart(string token);
 		Order GetOrder(int orderId);
 		IEnumerable<Order> GetOrders(int offset = 0, int limit = 0);
+		int GetOrdersCount();
 		IEnumerable<Order> GetOrders(Expression<Func<Order, bool>>? filter = null, int offset = 0, int limit = 0);
+		int GetOrdersCount(Expression<Func<Order, bool>>? filter = null);
 		IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0);
+		int GetOrdersCountByStatus(int orderStatusId);
 		IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0);
+		int GetOrdersCountByShipping(int shippingId);
 		IEnumerable<Order> GetOrdersForAnonymousUser(string token, int offset = 0, int limit = 0);
+		int GetOrdersCountForAnonymousUser(string token);
 		IEnumerable<Order> GetOrdersForUser(int userId, int offset = 0, int limit = 0);
+		int GetOrdersCountForUser(int userId);
 	}
 }

@@ -33,14 +33,38 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 			return Get(orderId, includeProperties: _orderProperties);
 		}
 
+		private Expression<Func<Order, bool>> GetOrdersByStatusPredicate(int orderStatusId)
+		{
+			return o => o.OrderStatusId == orderStatusId;
+		}
+
 		public IEnumerable<Order> GetOrdersByStatus(int orderStatusId, int offset = 0, int limit = 0)
 		{
-			return GetAll(o => o.OrderStatusId == orderStatusId, includeProperties: _orderProperties, offset: offset, limit: limit);
+			var predicate = GetOrdersByStatusPredicate(orderStatusId);
+			return GetAll(predicate, includeProperties: _orderProperties, offset: offset, limit: limit);
+		}
+
+		public int GetOrdersCountByStatus(int orderStatusId)
+		{
+			var predicate = GetOrdersByStatusPredicate(orderStatusId);
+			return Count(predicate);
+		}
+
+		private Expression<Func<Order, bool>> GetOrdersByShippingPredicate(int shippingId)
+		{
+			return o => o.ShippingId == shippingId;
 		}
 
 		public IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0)
 		{
-			return GetAll(o => o.ShippingId == shippingId, includeProperties: _orderProperties, offset: offset, limit: limit);
+			var predicate = GetOrdersByShippingPredicate(shippingId);
+			return GetAll(predicate, includeProperties: _orderProperties, offset: offset, limit: limit);
+		}
+
+		public int GetOrdersCountByShipping(int shippingId)
+		{
+			var predicate = GetOrdersByShippingPredicate(shippingId);
+			return Count(predicate);
 		}
 
 		public IEnumerable<Order> GetOrders(int offset = 0, int limit = 0)
@@ -48,19 +72,53 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 			return GetAll(includeProperties: _orderProperties, offset: offset, limit: limit);
 		}
 
+		public int GetOrdersCount()
+		{
+			return Count();
+		}
+
 		public IEnumerable<Order> GetOrders(Expression<Func<Order, bool>>? filter = null, int offset = 0, int limit = 0)
 		{
 			return GetAll(filter, includeProperties: _orderProperties, offset: offset, limit: limit);
 		}
 
+		public int GetOrdersCount(Expression<Func<Order, bool>>? filter = null)
+		{
+			return Count(filter);
+		}
+
+		private Expression<Func<Order, bool>> GetOrdersForAnonymousUserPredicate(string token)
+		{
+			return c => c.Token == token;
+		}
+
 		public IEnumerable<Order> GetOrdersForAnonymousUser(string token, int offset = 0, int limit = 0)
 		{
-			return GetAll(c => c.Token == token, includeProperties: _orderProperties, offset, limit);
+			var predicate = GetOrdersForAnonymousUserPredicate(token);
+			return GetAll(predicate, includeProperties: _orderProperties, offset, limit);
+		}
+
+		public int GetOrdersCountForAnonymousUser(string token)
+		{
+			var predicate = GetOrdersForAnonymousUserPredicate(token);
+			return Count(predicate);
+		}
+
+		private Expression<Func<Order, bool>> GetOrdersForUserPredicate(int userId)
+		{
+			return c => c.UserId == userId;
 		}
 
 		public IEnumerable<Order> GetOrdersForUser(int userId, int offset = 0, int limit = 0)
 		{
-			return GetAll(c => c.UserId == userId, includeProperties: _orderProperties, offset, limit);
+			var predicate = GetOrdersForUserPredicate(userId);
+			return GetAll(predicate, includeProperties: _orderProperties, offset, limit);
+		}
+
+		public int GetOrdersCountForUser(int userId)
+		{
+			var predicate = GetOrdersForUserPredicate(userId);
+			return Count(predicate);
 		}
 	}
 }

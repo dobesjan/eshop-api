@@ -176,6 +176,16 @@ namespace Eshop.Api.Controllers
 			}, "Orders not found!");
 		}
 
+		[HttpPost("getOrdersCount")]
+		public IActionResult GetOrdersCount([FromBody] OrderFilter filter)
+		{
+			return HandleResponse(() =>
+			{
+				var count = _orderService.GetOrdersByFilterCount(filter);
+				return CreateResult(success: true, data: new { count = count});
+			}, "Orders not found!");
+		}
+
 		[HttpGet("listForAnonymousUser")]
 		public IActionResult ListOrdersForAnonymousUser(string token, int offset, int limit)
 		{
@@ -183,6 +193,16 @@ namespace Eshop.Api.Controllers
 			{
 				var orders = _orderService.GetOrdersForAnonymousUser(token, offset, limit);
 				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
+			}, "Orders not found!");
+		}
+
+		[HttpGet("getOrdersCountForAnonymousUser")]
+		public IActionResult GetOrdersCountForAnonymousUser(string token)
+		{
+			return HandleResponse(() =>
+			{
+				var count = _orderService.GetOrdersCountForAnonymousUser(token);
+				return CreateResult(success: true, data: new { count = count });
 			}, "Orders not found!");
 		}
 
@@ -196,6 +216,16 @@ namespace Eshop.Api.Controllers
 			}, "Orders not found!");
 		}
 
+		[HttpGet("getOrdersCountForUser")]
+		public IActionResult GetOrdersCountForUser(int userId)
+		{
+			return HandleResponse(() =>
+			{
+				var count = _orderService.GetOrdersCountForUser(userId);
+				return CreateResult(success: true, data: new { count = count });
+			}, "Orders not found!");
+		}
+
 		[HttpGet("listByStatus")]
 		public IActionResult ListOrdersByStatus(int orderStatusId, int offset, int limit)
 		{
@@ -206,6 +236,16 @@ namespace Eshop.Api.Controllers
 			}, "Orders not found!");
 		}
 
+		[HttpGet("getOrdersCountByStatus")]
+		public IActionResult GetOrdersCountByStatus(int orderStatusId)
+		{
+			return HandleResponse(() =>
+			{
+				var count = _orderService.GetOrdersCountByStatus(orderStatusId);
+				return CreateResult(success: true, data: new { count = count });
+			}, "Orders not found!");
+		}
+
 		[HttpGet("listByShipping")]
 		public IActionResult ListOrdersByShipping(int shippingId, int offset, int limit)
 		{
@@ -213,6 +253,16 @@ namespace Eshop.Api.Controllers
 			{
 				var orders = _orderService.GetOrdersByShipping(shippingId, offset, limit);
 				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
+			}, "Orders not found!");
+		}
+
+		[HttpGet("getOrdersCountByShipping")]
+		public IActionResult GetOrdersCountByShipping(int shippingId)
+		{
+			return HandleResponse(() =>
+			{
+				var count = _orderService.GetOrdersCountByShipping(shippingId);
+				return CreateResult(success: true, data: new { count = count });
 			}, "Orders not found!");
 		}
 	}
