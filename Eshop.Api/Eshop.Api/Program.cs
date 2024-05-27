@@ -9,7 +9,10 @@ using Eshop.Api.DataAccess.Repository.Contacts;
 using Eshop.Api.DataAccess.Repository.Currencies;
 using Eshop.Api.DataAccess.Repository.Orders;
 using Eshop.Api.DataAccess.UnitOfWork;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +45,23 @@ builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 
+// Configure authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+	.AddJwtBearer("Auth0", options =>
+	{
+		options.Authority = "https://dev-c2revach3lofx66y.us.auth0.com";
+		options.Audience = "https://dev-c2revach3lofx66y.us.auth0.com";
+		options.TokenValidationParameters = new TokenValidationParameters
+		{
+			ValidateIssuer = true,
+			ValidateAudience = true,
+			ValidateLifetime = true,
+			ValidateIssuerSigningKey = true,
+			ValidIssuer = "https://dev-c2revach3lofx66y.us.auth0.com",
+			ValidAudience = "https://dev-c2revach3lofx66y.us.auth0.com"
+		};
+	});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -59,6 +79,7 @@ app.UseRouting();
 
 app.UseCors("AllowAllOrigins");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
