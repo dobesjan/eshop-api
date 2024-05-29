@@ -7,10 +7,12 @@ using System.Text.Json;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Eshop.Api.BusinessLayer.Services.Products;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Eshop.Api.Controllers
 {
     [ApiController]
+	[Authorize]
 	[Route("api/[controller]")]
 	public class ProductController : EshopApiControllerBase
 	{

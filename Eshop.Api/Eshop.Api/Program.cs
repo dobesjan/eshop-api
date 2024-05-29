@@ -46,21 +46,29 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 
 // Configure authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-	.AddJwtBearer("Auth0", options =>
+
+var domain = builder.Configuration["Authentication:Domain"];
+var audience = builder.Configuration["Authentication:Audience"];
+
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+	options.Authority = domain;
+	options.Audience = audience;
+	options.TokenValidationParameters = new TokenValidationParameters
 	{
-		options.Authority = "https://dev-c2revach3lofx66y.us.auth0.com";
-		options.Audience = "https://dev-c2revach3lofx66y.us.auth0.com";
-		options.TokenValidationParameters = new TokenValidationParameters
-		{
-			ValidateIssuer = true,
-			ValidateAudience = true,
-			ValidateLifetime = true,
-			ValidateIssuerSigningKey = true,
-			ValidIssuer = "https://dev-c2revach3lofx66y.us.auth0.com",
-			ValidAudience = "https://dev-c2revach3lofx66y.us.auth0.com"
-		};
-	});
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ValidIssuer = domain,
+		ValidAudience = audience
+	};
+});
 
 var app = builder.Build();
 

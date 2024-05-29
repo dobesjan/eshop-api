@@ -2,12 +2,14 @@
 using Eshop.Api.Controllers;
 using Eshop.Api.Models.Images;
 using Eshop.Api.Models.Products;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ImageController : EshopApiControllerBase
 {
