@@ -73,7 +73,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 
 			if (products == null)
 			{
-				throw new ArgumentNullException($"Products for category {categoryId} with offset {offset} and limit {limit} are null!");
+				throw new InvalidDataException($"Products for category {categoryId} with offset {offset} and limit {limit} are null!");
 			}
 			return products;
 		}
