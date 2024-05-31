@@ -25,6 +25,29 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 			return _unitOfWork.CategoryRepository.GetAll();
 		}
 
+		public IEnumerable<Category> GetCategoryHierarchy()
+		{
+			var categories = GetCategories().Where(c => c.Enabled).ToList();
+			return BuildHierarchy(categories, null);
+		}
+
+		private IEnumerable<Category> BuildHierarchy(List<Category> categories, int? parentId)
+		{
+			return categories
+				.Where(c => c.ParentCategoryId == parentId)
+				.Select(c => new Category
+				{
+					Id = c.Id,
+					Name = c.Name,
+					ParentCategoryId = c.ParentCategoryId,
+					Enabled = c.Enabled,
+					ProductCategories = c.ProductCategories,
+					ParentCategory = c.ParentCategory,
+					Children = BuildHierarchy(categories, c.Id).ToList()
+				})
+				.ToList();
+		}
+
 		public Category GetCategory(int id)
 		{
 			if (id <= 0)

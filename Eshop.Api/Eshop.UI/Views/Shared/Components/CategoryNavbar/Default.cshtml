@@ -1,0 +1,8 @@
+﻿@model IEnumerable<Category>
+
+<ul class="navbar-nav flex-grow-1">
+    @foreach (var category in Model.Where(c => c.ParentCategoryId == null))
+    {
+        @Html.Partial("_CategoryPartial", category)
+    }
+</ul>

@@ -25,5 +25,9 @@ namespace Eshop.Api.Models.Products
 
 		[ValidateNever]
 		public List<ProductCategory> ProductCategories { get; set; }
+
+		[ValidateNever]
+		[NotMapped]
+		public List<Category> Children { get; set; } = new List<Category>();
 	}
 }

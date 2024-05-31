@@ -1,0 +1,16 @@
+﻿@model Category
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown-@Model.Id" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        @Model.Name
+    </a>
+    @if (Model.Children.Any())
+    {
+        <ul class="dropdown-menu" aria-labelledby="navbarDropdown-@Model.Id">
+            @foreach (var child in Model.Children)
+            {
+                <li>@Html.Partial("_CategoryPartial", child)</li>
+            }
+        </ul>
+    }
+</li>

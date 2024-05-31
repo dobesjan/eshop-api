@@ -30,7 +30,17 @@ namespace Eshop.Api.Controllers
 			}, "Problem while retrieving categories!");
 		}
 
-		[HttpGet("get")]
+        [HttpGet("listHierarchy")]
+        public IActionResult ListCategoriesHierarchy()
+        {
+            return HandleResponse(() =>
+            {
+                var categories = _categoryService.GetCategoryHierarchy();
+                return CreateResult(success: true, data: categories);
+            }, "Problem while retrieving categories!");
+        }
+
+        [HttpGet("get")]
 		public IActionResult GetCategory(int id = 0)
 		{
 			return HandleResponse(() =>
