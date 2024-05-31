@@ -18,9 +18,9 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 {
 	public interface IUnitOfWork
 	{
-		IRepository<Category> CategoryRepository { get; }
+		ICategoryRepository CategoryRepository { get; }
 		IProductRepository ProductRepository { get; }
-		IRepository<ProductCategory> ProductCategoryRepository { get; }
+        IProductCategoryRepository ProductCategoryRepository { get; }
 		IProductImageRepository ProductImageRepository { get; }
 		IRepository<ProductPriceList> ProductPriceListRepository { get; }
 

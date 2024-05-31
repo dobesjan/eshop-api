@@ -20,9 +20,9 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 	{
 		private ApplicationDbContext _context;
 
-		public IRepository<Category> CategoryRepository { get; private set; }
+		public ICategoryRepository CategoryRepository { get; private set; }
 		public IProductRepository ProductRepository { get; private set; }
-		public IRepository<ProductCategory> ProductCategoryRepository { get; private set; }
+		public IProductCategoryRepository ProductCategoryRepository { get; private set; }
 		public IProductImageRepository ProductImageRepository { get; private set; }
 		public IRepository<ProductPriceList> ProductPriceListRepository { get; private set; }
 
@@ -49,9 +49,9 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 		public UnitOfWork(ApplicationDbContext context)
 		{
 			_context = context;
-			CategoryRepository = new Repository<Category>(context);
+			CategoryRepository = new CategoryRepository(context);
 			ProductRepository = new ProductRepository(context);
-			ProductCategoryRepository = new Repository<ProductCategory>(context);
+			ProductCategoryRepository = new ProductCategoryRepository(context);
 			ProductImageRepository = new ProductImageRepository(context);
 			ProductPriceListRepository = new Repository<ProductPriceList>(context);
 

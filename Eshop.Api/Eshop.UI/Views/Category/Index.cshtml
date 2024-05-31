@@ -1,3 +1,21 @@
 ﻿@model CategoryVM
 
 <h2>@Model.Category?.Name</h2>
+
+@if(Model.Products != null)
+{
+    foreach (var product in Model.Products)
+    {
+        <h3>@product.Name</h3>
+        <p>
+            @if (product.IsInStock)
+            {
+                <text>Available</text>
+            }
+            else
+            {
+                <text>Unavailable</text>
+            }
+        </p>
+    }
+}

@@ -10,6 +10,7 @@ namespace Eshop.Api.BusinessLayer.Services.Products
     public interface ICategoryService : IEshopService
     {
         IEnumerable<Category> GetCategories();
+        IEnumerable<Category> GetCategoriesForProduct(int productId);
         IEnumerable<Category> GetCategoryHierarchy();
 
 		Category GetCategory(int id);

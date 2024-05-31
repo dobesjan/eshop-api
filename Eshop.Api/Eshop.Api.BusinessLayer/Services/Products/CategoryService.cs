@@ -25,7 +25,17 @@ namespace Eshop.Api.BusinessLayer.Services.Products
 			return _unitOfWork.CategoryRepository.GetAll();
 		}
 
-		public IEnumerable<Category> GetCategoryHierarchy()
+		public IEnumerable<Category> GetCategoriesForProduct(int productId)
+		{
+			var relations = _unitOfWork.ProductCategoryRepository.GetCategoriesForProduct(productId);
+
+			if (relations == null) throw new InvalidDataException($"There are not any categories for product with id: {productId}!");
+
+			return relations.Select(r => r.Category).ToList();
+        }
+
+
+        public IEnumerable<Category> GetCategoryHierarchy()
 		{
 			var categories = GetCategories().Where(c => c.Enabled).ToList();
 			return BuildHierarchy(categories, null);
