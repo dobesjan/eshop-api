@@ -1,3 +1,4 @@
+using Auth0.AspNetCore.Authentication;
 using Eshop.Api.BusinessLayer.Services;
 using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.BusinessLayer.Services.Images;
@@ -7,9 +8,23 @@ using Eshop.Api.BusinessLayer.Services.Tokens;
 using Eshop.Api.DataAccess.Data;
 using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.UI.ActionFilters;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+	options.MinimumSameSitePolicy = SameSiteMode.None
+);
+
+//TODO: Move to configuration class
+builder.Services.AddAuth0WebAppAuthentication(options =>
+{
+    options.Domain = builder.Configuration["Authentication:Domain"];
+    options.ClientId = builder.Configuration["Authentication:ClientId"];
+	options.ClientSecret = builder.Configuration["Authentication:ClientSecret"];
+    options.CallbackPath = new PathString("/callback");
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -59,7 +74,18 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+//forward headers from the LB
+var forwardOpts = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
+};
+
+forwardOpts.KnownNetworks.Clear();
+forwardOpts.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardOpts);
+
 app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

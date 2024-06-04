@@ -1,5 +1,6 @@
 using Eshop.Api.BusinessLayer.Services.Tokens;
 using Eshop.UI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -25,5 +26,11 @@ namespace Eshop.UI.Controllers
 		{
 			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 		}
-	}
+
+        [Authorize]
+        public IActionResult Callback(string returnUrl = "/")
+        {
+            return LocalRedirect(returnUrl);
+        }
+    }
 }

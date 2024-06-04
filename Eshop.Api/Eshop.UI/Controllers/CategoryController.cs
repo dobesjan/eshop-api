@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Eshop.UI.Controllers
 {
-    public class CategoryController : Controller
+    public class CategoryController : EshopBaseController
     {
         private readonly ILogger<CategoryController> _logger;
         private readonly ICategoryService _categoryService;
