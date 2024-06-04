@@ -22,5 +22,15 @@ namespace Eshop.Api.DataAccess.Repository.Contacts
 		{
 			return Get(a => a.Id == id, includeProperties: _properties);
 		}
-	}
+
+		public Customer GetCustomerByUserId(string userId)
+		{
+			return Get(a => a.UserId == userId, includeProperties: _properties);
+		}
+
+		public Customer GetCustomerByToken(string token)
+		{
+			return Get(a => a.Token == token, includeProperties: _properties);
+		}
+    }
 }

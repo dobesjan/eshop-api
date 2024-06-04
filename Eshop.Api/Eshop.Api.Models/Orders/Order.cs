@@ -39,6 +39,9 @@ namespace Eshop.Api.Models.Orders
 		[ValidateNever]
 		public Shipping? Shipping { get; set; }
 
+		//TODO: Figure out how to correct contacts linking - currently if customer changes something (like address, etc.)
+		// then it's updated in order as well, which means that historical data will be changed unexpectly
+		// potentially add contact relation (new contact entity will be created with each new order)
 		public int? CustomerId { get; set; }
 
 		[ForeignKey(nameof(CustomerId))]

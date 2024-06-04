@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace Eshop.UI.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : EshopBaseController
     {
         public async Task Login(string returnUrl = "/")
         {
@@ -40,6 +40,7 @@ namespace Eshop.UI.Controllers
         {
             return View(new
             {
+                Id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
                 Name = User.Identity.Name,
                 EmailAddress = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value,
                 ProfileImage = User.Claims.FirstOrDefault(c => c.Type == "picture")?.Value

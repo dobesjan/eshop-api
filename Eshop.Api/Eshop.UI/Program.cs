@@ -1,5 +1,6 @@
 using Auth0.AspNetCore.Authentication;
 using Eshop.Api.BusinessLayer.Services;
+using Eshop.Api.BusinessLayer.Services.Contacts;
 using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.BusinessLayer.Services.Images;
 using Eshop.Api.BusinessLayer.Services.Orders;
@@ -56,6 +57,7 @@ builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 
