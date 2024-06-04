@@ -328,7 +328,10 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 					customerVM.Customer.PersonId = selectedCustomer.PersonId;
 					customerVM.Customer.Person.Id = selectedCustomer.PersonId;
 					customerVM.Customer.AddressId = selectedCustomer.AddressId;
-					customerVM.Customer.Address.Id = selectedCustomer.AddressId;
+					if (selectedCustomer.AddressId.HasValue)
+					{
+						customerVM.Customer.Address.Id = selectedCustomer.AddressId.Value;
+					}
 				}
 			}
 

@@ -43,8 +43,10 @@ namespace Eshop.UI.Controllers
 			{
 				var person = new Person
 				{
-					Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value
-                };
+					Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value,
+                    FirstName = User.Claims.FirstOrDefault(c => c.Type.Contains("givenname"))?.Value,
+					LastName = User.Claims.FirstOrDefault(c => c.Type.Contains("surname"))?.Value
+				};
 
 				customer = new Customer
 				{

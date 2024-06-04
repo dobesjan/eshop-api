@@ -24,6 +24,7 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
     options.Domain = builder.Configuration["Authentication:Domain"];
     options.ClientId = builder.Configuration["Authentication:ClientId"];
 	options.ClientSecret = builder.Configuration["Authentication:ClientSecret"];
+    options.Scope = "openid profile email";
     options.CallbackPath = new PathString("/callback");
 });
 
