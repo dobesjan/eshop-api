@@ -5,6 +5,7 @@ using Eshop.Api.Models.Contacts;
 using Eshop.UI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.Net.Mail;
 using System.Security.Claims;
@@ -37,35 +38,38 @@ namespace Eshop.UI.Controllers
         [Authorize]
         public IActionResult Callback(string returnUrl = "/")
         {
-            var customerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var customer = _customerService.GetCustomerByUserId(customerId);
-			if (customer == null)
+			if (User !=  null && !User.Claims.IsNullOrEmpty())
 			{
-				var person = new Person
-				{
-					Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value,
-                    FirstName = User.Claims.FirstOrDefault(c => c.Type.Contains("givenname"))?.Value,
-					LastName = User.Claims.FirstOrDefault(c => c.Type.Contains("surname"))?.Value
-				};
+                var customerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var customer = _customerService.GetCustomerByUserId(customerId);
+                if (customer == null)
+                {
+                    var person = new Person
+                    {
+                        Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value,
+                        FirstName = User.Claims.FirstOrDefault(c => c.Type.Contains("givenname"))?.Value,
+                        LastName = User.Claims.FirstOrDefault(c => c.Type.Contains("surname"))?.Value
+                    };
 
-				customer = new Customer
-				{
-					NewsletterAgree = false,
-					IsLogged = true,
-					UserId = customerId,
-					Person = person
-				};
+                    customer = new Customer
+                    {
+                        NewsletterAgree = false,
+                        IsLogged = true,
+                        UserId = customerId,
+                        Person = person
+                    };
 
-				try
-				{
-					_customerService.CreateCustomer(customer);
-				}
-				catch(InvalidDataException ex)
-				{
-					_logger.LogWarning(ex.Message);
-					//TODO: Consider if we should be redirected to some error page
+                    try
+                    {
+                        _customerService.CreateCustomer(customer);
+                    }
+                    catch (InvalidDataException ex)
+                    {
+                        _logger.LogWarning(ex.Message);
+                        //TODO: Consider if we should be redirected to some error page
+                    }
                 }
-			}
+            }
 
             return LocalRedirect(returnUrl);
         }
