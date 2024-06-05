@@ -1,4 +1,5 @@
-﻿using Eshop.Api.BusinessLayer.Services.Currencies;
+﻿using Eshop.Api.BusinessLayer.Services.Contacts;
+using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.DataAccess.Repository;
 using Eshop.Api.DataAccess.Repository.Contacts;
 using Eshop.Api.DataAccess.Repository.Orders;
@@ -23,11 +24,13 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 	{
 		private readonly IUnitOfWork _unitOfWork;
 		private readonly ICurrencyService _currencyService;
+		private readonly ICustomerService _customerService;
 
-		public OrderService(IUnitOfWork unitOfWork, ICurrencyService currencyService)
+		public OrderService(IUnitOfWork unitOfWork, ICurrencyService currencyService, ICustomerService customerService)
 		{
 			_unitOfWork = unitOfWork;
 			_currencyService = currencyService;
+			_customerService = customerService;
 		}
 
 		#region Order
@@ -105,35 +108,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return order;
 		}
 
-		public IEnumerable<Order> GetOrdersForAnonymousUser(string token = "", int offset = 0, int limit = 0)
+		public IEnumerable<Order> GetOrdersForUser(int customerId = 0, int offset = 0, int limit = 0)
 		{
-			if (token == String.Empty)
-			{
-				throw new InvalidDataException("Wrong token!");
-			}
-
-			var orders = _unitOfWork.OrderRepository.GetOrdersForAnonymousUser(token, offset, limit);
-			if (orders == null)
-			{
-				throw new InvalidDataException("Order not found in db!");
-			}
-
-			return orders;
-		}
-
-		public int GetOrdersCountForAnonymousUser(string token)
-		{
-			return _unitOfWork.OrderRepository.GetOrdersCountForAnonymousUser(token);
-		}
-
-		public IEnumerable<Order> GetOrdersForUser(int userId = 0, int offset = 0, int limit = 0)
-		{
-			if (userId <= 0)
+			if (customerId <= 0)
 			{
 				throw new InvalidDataException("Wrong user!");
 			}
 
-			var orders = _unitOfWork.OrderRepository.GetOrdersForUser(userId, offset, limit);
+			var orders = _unitOfWork.OrderRepository.GetOrdersForUser(customerId, offset, limit);
 			if (orders == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
@@ -142,22 +124,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return orders;
 		}
 
-		public int GetOrdersCountForUser(int userId)
+		public int GetOrdersCountForUser(int customerId)
 		{
-			return _unitOfWork.OrderRepository.GetOrdersCountForUser(userId);
+			return _unitOfWork.OrderRepository.GetOrdersCountForUser(customerId);
 		}
 
-		public bool SendOrder(string token)
+		public bool SendOrder(int customerId)
 		{
-			var order = GetShoppingCart(token);
-			SendOrderInternal(order);
-
-			return true;
-		}
-
-		public bool SendOrder(int userId)
-		{
-			var order = GetShoppingCart(userId);
+			var order = GetShoppingCart(customerId);
 			SendOrderInternal(order);
 
 			return true;
@@ -184,16 +158,19 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			throw new ArgumentNullException("Wrong identifier");
 		}
 
-		public Order GetShoppingCart(int userId)
+		public Order GetShoppingCart(int customerId)
 		{
-			var cart = _unitOfWork.OrderRepository.GetShoppingCart(userId);
+			var customer = _customerService.GetCustomer(customerId);
+			if (customer == null) throw new ArgumentNullException("Unknown customer identity!");
+
+			var cart = _unitOfWork.OrderRepository.GetShoppingCart(customer.Id);
 			if (cart != null) return cart;
 
-			var currency = _currencyService.GetPreferedCurrency(userId);
+			var currency = _currencyService.GetPreferedCurrency(customer.Id);
 
 			cart = new Order
 			{
-				UserId = userId,
+				Customer = customer,
 				OrderStatusId = 1,
 				IsOrdered = false,
 				CreatedDate = DateTime.UtcNow,
@@ -203,36 +180,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return _unitOfWork.OrderRepository.Add(cart, true);
 		}
 
-		public Order GetShoppingCart(string token)
+		public bool UpdateOrderStatus(int statusId, int customerId)
 		{
-			var cart = _unitOfWork.OrderRepository.GetShoppingCart(token);
-			if (cart != null) return cart;
-
-			var currency = _currencyService.GetPreferedCurrency(token);
-
-			cart = new Order
-			{
-				Token = token,
-				OrderStatusId = 1,
-				IsOrdered = false,
-				CreatedDate = DateTime.UtcNow,
-				CurrencyId = currency.Id
-			};
-
-			return _unitOfWork.OrderRepository.Add(cart, true);
-		}
-
-		public bool UpdateOrderStatus(int statusId, int userId)
-		{
-			var order = GetShoppingCart(userId);
-			UpdateOrderStatusInternal(statusId, order);
-
-			return true;
-		}
-
-		public bool UpdateOrderStatus(int statusId, string token)
-		{
-			var order = GetShoppingCart(token);
+			var order = GetShoppingCart(customerId);
 			UpdateOrderStatusInternal(statusId, order);
 
 			return true;
@@ -256,15 +206,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			Order order = null;
 
 			if (address.Address == null) throw new ArgumentNullException("Address not provided");
+            if (address.Address.CustomerId <= 0) throw new ArgumentNullException("Customer identity unknown!");
 
-			if (address.Address.UserId > 0)
-			{
-				order = GetShoppingCart(address.Address.UserId);
-			}
-			else
-			{
-				order = GetShoppingCart(address.Token);
-			}
+			order = GetShoppingCart(address.Address.CustomerId);
 			
 			if (order == null)
 			{
@@ -295,30 +239,22 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			throw new InvalidDataException("Error!");
 		}
 
-		public bool LinkCustomerContactToOrder(CustomerVM customerVM)
+		public bool LinkCustomerContactToOrder(Customer customer)
 		{
 			//TODO: Consider split - maybe to repository
-			if (customerVM == null) throw new ArgumentNullException("Customer is null");
-			if (customerVM.Customer == null) throw new ArgumentNullException("Customer is null");
-			if (customerVM.Customer.Person == null) throw new ArgumentNullException("Person is null");
-			if (customerVM.Customer.Address == null) throw new ArgumentNullException("Address is null");
+			if (customer == null) throw new ArgumentNullException("Customer is null");
+			if (customer.Person == null) throw new ArgumentNullException("Person is null");
+			if (customer.Address == null) throw new ArgumentNullException("Address is null");
+            if (customer.Id <= 0) throw new ArgumentNullException("Customer identity unknown!");
 
-			Order order = null;
-
-			if (customerVM.UserId > 0)
-			{
-				order = GetShoppingCart(customerVM.UserId);
-			}
-			else
-			{
-				order = GetShoppingCart(customerVM.Token);
-			}
+            Order order = GetShoppingCart(customer.Id);
 
 			if (order == null)
 			{
 				throw new InvalidDataException("Order not found in db!");
 			}
 
+            /*
 			if (order.CustomerId.HasValue && order.CustomerId > 0)
 			{
 				var selectedCustomer = _unitOfWork.CustomerRepository.GetCustomer(order.CustomerId.Value);
@@ -334,16 +270,20 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 					}
 				}
 			}
+			*/
 
-			customerVM.Customer.Person.Validate();
-			customerVM.Customer.Address.Validate();
+            customer.Person.Validate();
+            customer.Address.Validate();
 
-			var person = UpsertEntity(customerVM.Customer.Person, _unitOfWork.PersonRepository);
-			var address = UpsertEntity(customerVM.Customer.Address, _unitOfWork.AddressRepository);
+			var person = UpsertEntity(customer.Person, _unitOfWork.PersonRepository);
+			var address = UpsertEntity(customer.Address, _unitOfWork.AddressRepository);
 			if (person == null) throw new ArgumentNullException("Error storing person");
 			if (address == null) throw new ArgumentNullException("Error storing address");
 
-			var customer = UpsertEntity(customerVM.Customer, _unitOfWork.CustomerRepository);
+			customer.AddressId = address.Id;
+			customer.PersonId = person.Id;
+
+			customer = UpsertEntity(customer, _unitOfWork.CustomerRepository);
 			order.CustomerId = customer.Id;
 			_unitOfWork.OrderRepository.Update(order, true);
 
@@ -404,19 +344,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return CreateProductToOrderRelation(product.ProductId, product.Count, selectedOrder);
 		}
 
-		public bool AddProductToOrder(int productId, int userId, int count)
+		public bool AddProductToOrder(int productId, int customerId, int count)
 		{
 			if (!_unitOfWork.ProductRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
 
-			var cart = GetShoppingCart(userId);
-			return CreateProductToOrderRelation(productId, count, cart);
-		}
-
-		public bool AddProductToOrder(int productId, string token, int count)
-		{
-			if (!_unitOfWork.ProductRepository.IsStored(productId)) throw new InvalidDataException("Product not found");
-
-			var cart = GetShoppingCart(token);
+			var cart = GetShoppingCart(customerId);
 			return CreateProductToOrderRelation(productId, count, cart);
 		}
 
@@ -432,17 +364,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
-		public bool RemoveProductFromOrder(int productId, int userId)
+		public bool RemoveProductFromOrder(int productId, int customerId)
 		{
-			var cart = GetShoppingCart(userId);
-			RemoveProductFromOrderInternal(productId, cart.Id);
-
-			return true;
-		}
-
-		public bool RemoveProductFromOrder(int productId, string token)
-		{
-			var cart = GetShoppingCart(token);
+			var cart = GetShoppingCart(customerId);
 			RemoveProductFromOrderInternal(productId, cart.Id);
 
 			return true;
@@ -494,17 +418,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
             return true;
 		}
 
-		public bool UpdateShipping(int shippingId, int userId)
+		public bool UpdateShipping(int shippingId, int customerId)
 		{
-			var cart = GetShoppingCart(userId);
-			UpdateShippingInternal(shippingId, cart);
-
-			return true;
-		}
-
-		public bool UpdateShipping(int shippingId, string token)
-		{
-			var cart = GetShoppingCart(token);
+			var cart = GetShoppingCart(customerId);
 			UpdateShippingInternal(shippingId, cart);
 
 			return true;
@@ -635,6 +551,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return _unitOfWork.OrderRepository.Count(expression);
 		}
 
-		#endregion
-	}
+        #endregion
+    }
 }

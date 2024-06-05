@@ -10,8 +10,6 @@ namespace Eshop.Api.Models.ViewModels.Contacts
 {
 	public class CustomerVM
 	{
-		public int UserId { get; set; }
-		public string Token { get; set; }
 		public Customer Customer { get; set; }
 	}
 }

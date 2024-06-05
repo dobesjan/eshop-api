@@ -18,14 +18,9 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 		{
 		}
 
-		public Order GetShoppingCart(int userId)
+		public Order GetShoppingCart(int customerId)
 		{
-			return Get(o => o.UserId == userId && !o.IsOrdered);
-		}
-
-		public Order GetShoppingCart(string token)
-		{
-			return Get(o => o.Token.Equals(token) && !o.IsOrdered);
+			return Get(o => o.CustomerId.HasValue && o.CustomerId.Value == customerId && !o.IsOrdered);
 		}
 
 		public Order GetOrder(int orderId)
@@ -87,38 +82,21 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 			return Count(filter);
 		}
 
-		private Expression<Func<Order, bool>> GetOrdersForAnonymousUserPredicate(string token)
+		private Expression<Func<Order, bool>> GetOrdersForUserPredicate(int customerId)
 		{
-			return c => c.Token == token;
+			return c => c.CustomerId.HasValue && c.CustomerId.Value == customerId;
 		}
 
-		public IEnumerable<Order> GetOrdersForAnonymousUser(string token, int offset = 0, int limit = 0)
+		public IEnumerable<Order> GetOrdersForUser(int customerId, int offset = 0, int limit = 0)
 		{
-			var predicate = GetOrdersForAnonymousUserPredicate(token);
+			var predicate = GetOrdersForUserPredicate(customerId);
 			return GetAll(predicate, includeProperties: _orderProperties, offset, limit);
 		}
 
-		public int GetOrdersCountForAnonymousUser(string token)
+		public int GetOrdersCountForUser(int customerId)
 		{
-			var predicate = GetOrdersForAnonymousUserPredicate(token);
-			return Count(predicate);
-		}
-
-		private Expression<Func<Order, bool>> GetOrdersForUserPredicate(int userId)
-		{
-			return c => c.UserId == userId;
-		}
-
-		public IEnumerable<Order> GetOrdersForUser(int userId, int offset = 0, int limit = 0)
-		{
-			var predicate = GetOrdersForUserPredicate(userId);
-			return GetAll(predicate, includeProperties: _orderProperties, offset, limit);
-		}
-
-		public int GetOrdersCountForUser(int userId)
-		{
-			var predicate = GetOrdersForUserPredicate(userId);
-			return Count(predicate);
+            var predicate = GetOrdersForUserPredicate(customerId);
+            return Count(predicate);
 		}
 	}
 }

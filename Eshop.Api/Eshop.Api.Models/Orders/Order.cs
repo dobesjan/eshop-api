@@ -16,10 +16,6 @@ namespace Eshop.Api.Models.Orders
 {
 	public class Order : Entity
 	{
-		public int? UserId { get; set; }
-
-		public string Token { get; set; }
-
 		public int OrderStatusId { get; set; }
 
 		[ForeignKey(nameof(OrderStatusId))]
@@ -48,7 +44,13 @@ namespace Eshop.Api.Models.Orders
 		[ValidateNever]
 		public Customer? Customer { get; set; }
 
-		public int? AddressId { get; set; }
+        public int? BillingAddressId { get; set; }
+
+        [ForeignKey(nameof(BillingAddressId))]
+        [ValidateNever]
+        public Address? BillingAddress { get; set; }
+
+        public int? AddressId { get; set; }
 
 		[ForeignKey(nameof(AddressId))]
 		[ValidateNever]
@@ -80,10 +82,6 @@ namespace Eshop.Api.Models.Orders
 
 		public override bool Validate()
 		{
-			if (UserId <= 0 && Token == String.Empty)
-			{
-				throw new InvalidDataException("UserId or token not provided!");
-			}
 			/*
 			if (OrderProducts == null)
 			{
@@ -105,10 +103,10 @@ namespace Eshop.Api.Models.Orders
 
 			if (Customer == null) throw new InvalidDataException("Customer data not filled");
 			if (Customer.Person == null) throw new InvalidDataException("Customer personal data not filled");
-			if (Customer.Address == null) throw new InvalidDataException("Customer address not filled");
+			if (BillingAddress == null) throw new InvalidDataException("Billing address not filled");
 
 			Customer.Person.Validate();
-			Customer.Address.Validate();
+            BillingAddress.Validate();
 
 			return true;
 		}
@@ -118,8 +116,6 @@ namespace Eshop.Api.Models.Orders
 			return new
 			{
 				Id = Id,
-				UserId = UserId,
-				Token = Token,
 				OrderStatusId = OrderStatusId,
 				OrderStatus = OrderStatus,
 				IsOrdered = IsOrdered,

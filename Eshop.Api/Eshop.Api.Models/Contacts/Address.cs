@@ -18,7 +18,7 @@ namespace Eshop.Api.Models.Contacts
 		[ValidateNever]
 		public AddressType AddressType { get; set; }
 
-		public int UserId { get; set; }
+		public int CustomerId { get; set; }
 
 		[Required]
 		public string Street { get; set; }

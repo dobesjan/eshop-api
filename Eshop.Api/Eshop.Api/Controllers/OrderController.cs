@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Orders;
+using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
 using Eshop.Api.Models.ViewModels.Contacts;
 using Microsoft.AspNetCore.Authorization;
@@ -28,16 +29,6 @@ namespace Eshop.Api.Controllers
 			}, "Problem while saving order!");
 		}
 
-		[HttpGet("addProduct")]
-		public IActionResult AddProduct(int productId, string token, int count)
-		{
-			return HandleResponse(() =>
-			{
-				var success = _orderService.AddProductToOrder(productId, token, count);
-				return CreateResult(success: success, successMessage: "Product added succesfully!", errorMessage: "Problem while saving product to order!");
-			}, "Problem while saving product to order!");
-		}
-
 		[HttpGet("addProductForUser")]
 		public IActionResult AddProductForUser(int productId, int userId, int count)
 		{
@@ -46,16 +37,6 @@ namespace Eshop.Api.Controllers
 				var success = _orderService.AddProductToOrder(productId, userId, count);
 				return CreateResult(success: success, successMessage: "Product added succesfully!", errorMessage: "Problem while saving product to order!");
 			}, "Problem while saving product to order!");
-		}
-
-		[HttpGet("deleteProduct")]
-		public IActionResult DeleteProduct(int productId, string token)
-		{
-			return HandleResponse(() =>
-			{
-				var success = _orderService.RemoveProductFromOrder(productId, token);
-				return CreateResult(success: success, successMessage: "Product removed succesfully!", errorMessage: "Problem while removing product from order!");
-			}, "Problem while removing product from order!");
 		}
 
 		[HttpGet("deleteProductForUser")]
@@ -68,16 +49,6 @@ namespace Eshop.Api.Controllers
 			}, "Problem while removing product from order!");
 		}
 
-		[HttpGet("updateStatus")]
-		public IActionResult UpdateStatus(int statusId, string token)
-		{
-			return HandleResponse(() =>
-			{
-				var success = _orderService.UpdateOrderStatus(statusId, token);
-				return CreateResult(success: success, successMessage: "Order status updated succesfully!", errorMessage: "Problem while updating Order status!");
-			}, "Problem while updating Order status!");
-		}
-
 		[HttpGet("updateStatusForUser")]
 		public IActionResult UpdateStatusForUser(int statusId, int userId)
 		{
@@ -88,16 +59,6 @@ namespace Eshop.Api.Controllers
 			}, "Problem while updating Order status!");
 		}
 
-		[HttpGet("sendOrder")]
-		public IActionResult SendOrder(string token)
-		{
-			return HandleResponse(() =>
-			{
-				var success = _orderService.SendOrder(token);
-				return CreateResult(success: success, successMessage: "Order sent!", errorMessage: "Problem while sending order!");
-			}, "Problem while sending order!");
-		}
-
 		[HttpGet("sendOrderForUser")]
 		public IActionResult SendOrderForUser(int userId)
 		{
@@ -106,16 +67,6 @@ namespace Eshop.Api.Controllers
 				var success = _orderService.SendOrder(userId);
 				return CreateResult(success: success, successMessage: "Order sent!", errorMessage: "Problem while sending order!");
 			}, "Problem while sending order!");
-		}
-
-		[HttpGet("updateShipping")]
-		public IActionResult UpdateShipping(int shippingId, string token)
-		{
-			return HandleResponse(() =>
-			{
-				var success = _orderService.UpdateShipping(shippingId, token);
-				return CreateResult(success: success, successMessage: "Order shipping updated succesfully!", errorMessage: "Problem while updating Order shipping!");
-			}, "Problem while updating Order shipping!");
 		}
 
 		[HttpGet("updateShippingForUser")]
@@ -139,11 +90,11 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpPost("linkCustomer")]
-		public IActionResult LinkCustomer([FromBody] CustomerVM customerVM)
+		public IActionResult LinkCustomer([FromBody] Customer customer)
 		{
 			return HandleResponse(() =>
 			{
-				var success = _orderService.LinkCustomerContactToOrder(customerVM);
+				var success = _orderService.LinkCustomerContactToOrder(customer);
 				return CreateResult(success: success, successMessage: "Customer saved successfully!", errorMessage: "Problem while saving customer!");
 			}, "Problem while saving customer!");
 		}
@@ -185,26 +136,6 @@ namespace Eshop.Api.Controllers
 			{
 				var count = _orderService.GetOrdersByFilterCount(filter);
 				return CreateResult(success: true, data: new { count = count});
-			}, "Orders not found!");
-		}
-
-		[HttpGet("listForAnonymousUser")]
-		public IActionResult ListOrdersForAnonymousUser(string token, int offset, int limit)
-		{
-			return HandleResponse(() =>
-			{
-				var orders = _orderService.GetOrdersForAnonymousUser(token, offset, limit);
-				return CreateResult(success: true, data: orders.Select(o => o.ToJson()).ToList());
-			}, "Orders not found!");
-		}
-
-		[HttpGet("getOrdersCountForAnonymousUser")]
-		public IActionResult GetOrdersCountForAnonymousUser(string token)
-		{
-			return HandleResponse(() =>
-			{
-				var count = _orderService.GetOrdersCountForAnonymousUser(token);
-				return CreateResult(success: true, data: new { count = count });
 			}, "Orders not found!");
 		}
 

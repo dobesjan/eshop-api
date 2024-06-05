@@ -11,8 +11,7 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 {
 	public interface IOrderRepository : IRepository<Order>
 	{
-		Order GetShoppingCart(int userId);
-		Order GetShoppingCart(string token);
+		Order GetShoppingCart(int customerId);
 		Order GetOrder(int orderId);
 		IEnumerable<Order> GetOrders(int offset = 0, int limit = 0);
 		int GetOrdersCount();
@@ -22,9 +21,7 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 		int GetOrdersCountByStatus(int orderStatusId);
 		IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0);
 		int GetOrdersCountByShipping(int shippingId);
-		IEnumerable<Order> GetOrdersForAnonymousUser(string token, int offset = 0, int limit = 0);
-		int GetOrdersCountForAnonymousUser(string token);
-		IEnumerable<Order> GetOrdersForUser(int userId, int offset = 0, int limit = 0);
-		int GetOrdersCountForUser(int userId);
+		IEnumerable<Order> GetOrdersForUser(int customerId, int offset = 0, int limit = 0);
+		int GetOrdersCountForUser(int customerId);
 	}
 }

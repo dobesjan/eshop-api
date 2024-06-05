@@ -16,27 +16,22 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
     {
         bool CreateOrder(Order order);
         bool UpdateOrder(Order order);
-        bool UpdateOrderStatus(int statusId, int userId);
-        bool UpdateOrderStatus(int statusId, string token);
-        bool SendOrder(string token);
-        bool SendOrder(int userId);
+        bool UpdateOrderStatus(int statusId, int customerId);
+        bool SendOrder(int customerId);
 
         bool AddProductToOrder(OrderProduct product);
-        bool AddProductToOrder(int productId, int userId, int count);
-        bool AddProductToOrder(int productId, string token, int count);
+        bool AddProductToOrder(int productId, int customerId, int count);
         bool AddProductsToOrder(IEnumerable<OrderProduct> products);
-        bool RemoveProductFromOrder(int productId, int userId);
-        bool RemoveProductFromOrder(int productId, string token);
+        bool RemoveProductFromOrder(int productId, int customerId);
 
-        bool LinkCustomerContactToOrder(CustomerVM customer);
+        bool LinkCustomerContactToOrder(Customer customer);
         bool LinkDeliveryAddressToOrder(AddressVM address);
 
         bool UpsertOrderPayment(Payment payment);
         IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId);
 
         Order GetOrder(int orderId = 0);
-        Order GetShoppingCart(int userId);
-        Order GetShoppingCart(string token);
+        Order GetShoppingCart(int customerId);
         IEnumerable<Order> GetOrders(int offset = 0, int limit = 0);
 		int GetOrdersCount();
 		int GetOrdersCount(Expression<Func<Order, bool>>? filter = null);
@@ -46,12 +41,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		int GetOrdersCountByStatus(int orderStatusId);
 		IEnumerable<Order> GetOrdersByFilter(OrderFilter filter, int offset = 0, int limit = 0);
         int GetOrdersByFilterCount(OrderFilter filter);
-		IEnumerable<Order> GetOrdersForUser(int userId = 0, int offset = 0, int limit = 0);
-		int GetOrdersCountForUser(int userId);
-		IEnumerable<Order> GetOrdersForAnonymousUser(string token = "", int offset = 0, int limit = 0);
-		int GetOrdersCountForAnonymousUser(string token);
+		IEnumerable<Order> GetOrdersForUser(int customerId = 0, int offset = 0, int limit = 0);
+		int GetOrdersCountForUser(int customerId);
 
-		bool UpdateShipping(int shippingId, int userId);
-        bool UpdateShipping(int shippingId, string token);
+		bool UpdateShipping(int shippingId, int customerId);
     }
 }
