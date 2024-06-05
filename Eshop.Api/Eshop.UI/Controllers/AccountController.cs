@@ -1,4 +1,5 @@
 ﻿using Auth0.AspNetCore.Authentication;
+using Eshop.Api.BusinessLayer.Services.Contacts;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,9 @@ namespace Eshop.UI.Controllers
 {
     public class AccountController : EshopBaseController
     {
+        public AccountController(ICustomerService customerService, ILogger<AccountController> logger) : base(customerService, logger)
+        { }
+
         public async Task Login(string returnUrl = "/")
         {
             var authenticationProperties = new LoginAuthenticationPropertiesBuilder()

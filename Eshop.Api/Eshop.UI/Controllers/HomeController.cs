@@ -17,8 +17,8 @@ namespace Eshop.UI.Controllers
 		private readonly ILogger<HomeController> _logger;
 		private readonly ICustomerService _customerService;
 
-		public HomeController(ILogger<HomeController> logger, ICustomerService customerService)
-		{
+		public HomeController(ILogger<HomeController> logger, ICustomerService customerService) : base(customerService, logger)
+        {
 			_logger = logger;
 			_customerService = customerService;
 		}
@@ -38,7 +38,7 @@ namespace Eshop.UI.Controllers
         [Authorize]
         public IActionResult Callback(string returnUrl = "/")
         {
-			if (User !=  null && !User.Claims.IsNullOrEmpty())
+			if (User != null && !User.Claims.IsNullOrEmpty())
 			{
                 var customerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 var customer = _customerService.GetCustomerByUserId(customerId);

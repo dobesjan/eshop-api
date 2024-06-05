@@ -1,4 +1,5 @@
-﻿using Eshop.Api.BusinessLayer.Services.Products;
+﻿using Eshop.Api.BusinessLayer.Services.Contacts;
+using Eshop.Api.BusinessLayer.Services.Products;
 using Eshop.Api.Models.Products;
 using Eshop.UI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace Eshop.UI.Controllers
         private readonly ICategoryService _categoryService;
         private readonly IProductService _productService;
 
-        public CategoryController(ILogger<CategoryController> logger, ICategoryService categoryService, IProductService productService)
+        public CategoryController(ILogger<CategoryController> logger, ICategoryService categoryService, IProductService productService, ICustomerService customerService) : base(customerService, logger)
         {
             _logger = logger;
             _categoryService = categoryService;

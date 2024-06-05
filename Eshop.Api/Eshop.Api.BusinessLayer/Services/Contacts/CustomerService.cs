@@ -17,7 +17,7 @@ namespace Eshop.Api.BusinessLayer.Services.Contacts
             _unitOfWork = unitOfWork;
         }
 
-        public bool CreateCustomer(Customer customer)
+        public Customer CreateCustomer(Customer customer)
         {
             if (customer.IsLogged && String.IsNullOrEmpty(customer.UserId)) throw new InvalidDataException("Unknown user identity");
             if (!customer.IsLogged && String.IsNullOrEmpty(customer.Token)) throw new ArgumentNullException("Token is missing for unauthenticated user");
@@ -34,10 +34,7 @@ namespace Eshop.Api.BusinessLayer.Services.Contacts
                 customer.AddressId = address.Id;
             }
 
-            _unitOfWork.CustomerRepository.Add(customer);
-            _unitOfWork.CustomerRepository.Save();
-
-            return true;
+            return _unitOfWork.CustomerRepository.Add(customer, true);
         }
 
         public Customer GetCustomer(int customerId)

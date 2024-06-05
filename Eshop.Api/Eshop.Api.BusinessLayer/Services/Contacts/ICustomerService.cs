@@ -13,6 +13,6 @@ namespace Eshop.Api.BusinessLayer.Services.Contacts
         public Customer GetCustomerByUserId(string userId);
         public Customer GetCustomerByToken(string token);
 
-        public bool CreateCustomer(Customer customer);
+        public Customer CreateCustomer(Customer customer);
     }
 }
