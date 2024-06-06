@@ -28,7 +28,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
         bool LinkDeliveryAddressToOrder(Address address);
         bool LinkBillingContactToOrder(Contact contact);
 
-        bool UpsertOrderPayment(Payment payment);
+        bool UpsertOrderPayment(Payment payment, bool recalculate = false);
+        bool GeneratePayment(int orderId, int paymentMethodId, int currencyId);
+        //TODO: Add update method for payment status
         IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId);
 
         Order GetOrder(int orderId = 0);

@@ -14,32 +14,9 @@ namespace Eshop.Api.DataAccess.Repository.Currencies
         {
         }
 
-        public CurrencyPreference GetCurrencyPreference(string token)
-        {
-            return Get(p => p.Token == token);
-        }
-
         public CurrencyPreference GetCurrencyPreference(int userId)
         {
             return Get(p => p.UserId == userId);
-        }
-
-        public CurrencyPreference StorePreferedCurrency(string token, int currencyId)
-        {
-            var preference = GetCurrencyPreference(token);
-            if (preference != null)
-            {
-                preference.CurrencyId = currencyId;
-                return Update(preference, true);
-            }
-
-            preference = new CurrencyPreference
-            {
-                CurrencyId = currencyId,
-                Token = token,
-            };
-
-            return Add(preference, true);
         }
 
         public CurrencyPreference StorePreferedCurrency(int userId, int currencyId)

@@ -10,8 +10,6 @@ namespace Eshop.Api.BusinessLayer.Services.Currencies
     public interface ICurrencyService : IEshopService
 	{
 		Currency GetPreferedCurrency(int userId);
-		Currency GetPreferedCurrency(string token);
 		bool StorePreferedCurrency(int userId, int currencyId);
-		bool StorePreferedCurrency(string token, int currencyId);
 	}
 }
