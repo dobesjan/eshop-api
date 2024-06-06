@@ -1,3 +1,94 @@
 ﻿@model ContactVM
 
-<h2>Contact form</h2>
+<div class="card shadow border-0 mt-4">
+	<div class="card-header bg-secondary bg-gradient ml-0 py-3">
+		<div class="row">
+			<div class="col-12 text-center">
+				<h2 class="text-white py-2">Contact</h2>
+			</div>
+		</div>
+	</div>
+	<div class="card-body p-4">
+		<form method="post" class="row">
+			<input asp-for="BillingContact.Id" hidden />
+			<!--
+			<input asp-for="BillingContact.Person.Id" hidden />
+			<input asp-for="BillingContact.Address.Id" hidden />
+			<input asp-for="BillingContact.Address.CustomerId" hidden />
+			<input asp-for="DeliveryAddress.Id" hidden />
+			<input asp-for="DeliveryAddress.CustomerId" hidden />
+			-->
+			<div class="row">
+				<div class="border p-3">
+					<div asp-validation-summary="All"></div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="BillingContact.Person.FirstName" class="form-control border-0 shadow" />
+						<label asp-for="BillingContact.Person.FirstName" class="ms-2"></label>
+						<span asp-validation-for="BillingContact.Person.FirstName" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="BillingContact.Person.LastName" class="form-control border-0 shadow" />
+						<label asp-for="BillingContact.Person.LastName" class="ms-2"></label>
+						<span asp-validation-for="BillingContact.Person.LastName" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="BillingContact.Person.Email" class="form-control border-0 shadow" />
+						<label asp-for="BillingContact.Person.Email" class="ms-2"></label>
+						<span asp-validation-for="BillingContact.Person.Email" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="BillingContact.Person.PhoneNumber" class="form-control border-0 shadow" />
+						<label asp-for="BillingContact.Person.PhoneNumber" class="ms-2"></label>
+						<span asp-validation-for="BillingContact.Person.PhoneNumber" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="BillingContact.Address.Street" class="form-control border-0 shadow" />
+						<label asp-for="BillingContact.Address.Street" class="ms-2"></label>
+						<span asp-validation-for="BillingContact.Address.Street" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="BillingContact.Address.City" class="form-control border-0 shadow" />
+						<label asp-for="BillingContact.Address.City" class="ms-2"></label>
+						<span asp-validation-for="BillingContact.Address.City" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="BillingContact.Address.PostalCode" class="form-control border-0 shadow" />
+						<label asp-for="BillingContact.Address.PostalCode" class="ms-2"></label>
+						<span asp-validation-for="BillingContact.Address.PostalCode" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<select asp-for="BillingContact.Address.Country" asp-items="@Model.Countries" class="form-select"></select>
+					</div>
+
+					<div class="form-floating py-2 col-12">
+						<input asp-for="DeliveryAddress.Street" class="form-control border-0 shadow" />
+						<label asp-for="DeliveryAddress.Street" class="ms-2"></label>
+						<span asp-validation-for="DeliveryAddress.Street" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="DeliveryAddress.City" class="form-control border-0 shadow" />
+						<label asp-for="DeliveryAddress.City" class="ms-2"></label>
+						<span asp-validation-for="DeliveryAddress.City" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<input asp-for="DeliveryAddress.PostalCode" class="form-control border-0 shadow" />
+						<label asp-for="DeliveryAddress.PostalCode" class="ms-2"></label>
+						<span asp-validation-for="DeliveryAddress.PostalCode" class="text-danger"></span>
+					</div>
+					<div class="form-floating py-2 col-12">
+						<select asp-for="DeliveryAddress.Country" asp-items="@Model.Countries" class="form-select"></select>
+					</div>
+					<div class="row pt-2">
+						<div class="col-6 col-md-3">
+							<button type="submit" class="btn btn-primary form-control">Next</button>
+						</div>
+						<div class="col-6 col-md-3">
+							<a asp-action="Index" class="btn btn-outline-primary border form-control">Back</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</form>
+	</div>
+</div>
