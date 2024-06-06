@@ -201,14 +201,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		#endregion
 
 		#region Contacts
-		public bool LinkDeliveryAddressToOrder(AddressVM address)
+		public bool LinkDeliveryAddressToOrder(Address address)
 		{
 			Order order = null;
 
-			if (address.Address == null) throw new ArgumentNullException("Address not provided");
-            if (address.Address.CustomerId <= 0) throw new ArgumentNullException("Customer identity unknown!");
+			if (address == null) throw new ArgumentNullException("Address not provided");
+            if (address.CustomerId <= 0) throw new ArgumentNullException("Customer identity unknown!");
 
-			order = GetShoppingCart(address.Address.CustomerId);
+			order = GetShoppingCart(address.CustomerId);
 			
 			if (order == null)
 			{
@@ -222,11 +222,11 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				selectedAddress = _unitOfWork.AddressRepository.GetAddress(order.AddressId.Value);
 				if (selectedAddress != null)
 				{
-					address.Address.Id = selectedAddress.Id;
+					address.Id = selectedAddress.Id;
 				}
 			}
 
-			selectedAddress = UpsertEntity(address.Address, _unitOfWork.AddressRepository);
+			selectedAddress = UpsertEntity(address, _unitOfWork.AddressRepository);
 
 			if (selectedAddress != null)
 			{
@@ -243,8 +243,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		{
 			//TODO: Consider split - maybe to repository
 			if (customer == null) throw new ArgumentNullException("Customer is null");
-			if (customer.Person == null) throw new ArgumentNullException("Person is null");
-			if (customer.Address == null) throw new ArgumentNullException("Address is null");
+            if (customer.Contact == null) throw new ArgumentNullException("Contact is null");
+            if (customer.Contact.Person == null) throw new ArgumentNullException("Person is null");
+			if (customer.Contact.Address == null) throw new ArgumentNullException("Address is null");
             if (customer.Id <= 0) throw new ArgumentNullException("Customer identity unknown!");
 
             Order order = GetShoppingCart(customer.Id);
@@ -272,16 +273,16 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			}
 			*/
 
-            customer.Person.Validate();
-            customer.Address.Validate();
+            customer.Contact.Person.Validate();
+            customer.Contact.Address.Validate();
 
-			var person = UpsertEntity(customer.Person, _unitOfWork.PersonRepository);
-			var address = UpsertEntity(customer.Address, _unitOfWork.AddressRepository);
+			var person = UpsertEntity(customer.Contact.Person, _unitOfWork.PersonRepository);
+			var address = UpsertEntity(customer.Contact.Address, _unitOfWork.AddressRepository);
 			if (person == null) throw new ArgumentNullException("Error storing person");
 			if (address == null) throw new ArgumentNullException("Error storing address");
 
-			customer.AddressId = address.Id;
-			customer.PersonId = person.Id;
+			customer.Contact.AddressId = address.Id;
+			customer.Contact.PersonId = person.Id;
 
 			customer = UpsertEntity(customer, _unitOfWork.CustomerRepository);
 			order.CustomerId = customer.Id;
@@ -289,6 +290,38 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			return true;
 		}
+
+		public bool LinkBillingContactToOrder(Contact contact)
+		{
+            if (contact == null) throw new ArgumentNullException("Customer is null");
+            if (contact.Person == null) throw new ArgumentNullException("Person is null");
+            if (contact.Address == null) throw new ArgumentNullException("Address is null");
+			if (contact.Customer == null) throw new ArgumentException("Customer is null");
+
+            Order order = GetShoppingCart(contact.Customer.Id);
+
+            if (order == null)
+            {
+                throw new InvalidDataException("Order not found in db!");
+            }
+
+            contact.Person.Validate();
+            contact.Address.Validate();
+
+            var person = UpsertEntity(contact.Person, _unitOfWork.PersonRepository);
+            var address = UpsertEntity(contact.Address, _unitOfWork.AddressRepository);
+            if (person == null) throw new ArgumentNullException("Error storing person");
+            if (address == null) throw new ArgumentNullException("Error storing address");
+
+            contact.AddressId = address.Id;
+            contact.PersonId = person.Id;
+
+            contact = UpsertEntity(contact, _unitOfWork.ContactRepository);
+            order.BillingContactId = contact.Id;
+            _unitOfWork.OrderRepository.Update(order, true);
+
+            return true;
+        }
 
 		#endregion
 

@@ -1,6 +1,7 @@
 using Eshop.Api.BusinessLayer.Services.Contacts;
 using Eshop.Api.BusinessLayer.Services.Tokens;
 using Eshop.Api.DataAccess.Repository.Contacts;
+using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.Api.Models.Contacts;
 using Eshop.UI.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -16,11 +17,13 @@ namespace Eshop.UI.Controllers
 	{
 		private readonly ILogger<HomeController> _logger;
 		private readonly ICustomerService _customerService;
+        private readonly IUnitOfWork _unitOfWork;
 
-		public HomeController(ILogger<HomeController> logger, ICustomerService customerService) : base(customerService, logger)
+		public HomeController(ILogger<HomeController> logger, ICustomerService customerService, IUnitOfWork unitOfWork) : base(customerService, logger)
         {
 			_logger = logger;
 			_customerService = customerService;
+            _unitOfWork = unitOfWork;
 		}
 
 		public IActionResult Index()
@@ -51,12 +54,19 @@ namespace Eshop.UI.Controllers
                         LastName = User.Claims.FirstOrDefault(c => c.Type.Contains("surname"))?.Value
                     };
 
+                    var contact = new Contact
+                    {
+                        Person = person
+                    };
+
+                    contact = _unitOfWork.ContactRepository.Add(contact, true);
+
                     customer = new Customer
                     {
                         NewsletterAgree = false,
                         IsLogged = true,
                         UserId = customerId,
-                        Person = person
+                        ContactId = contact.Id
                     };
 
                     try

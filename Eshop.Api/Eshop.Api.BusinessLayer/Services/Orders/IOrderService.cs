@@ -25,7 +25,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
         bool RemoveProductFromOrder(int productId, int customerId);
 
         bool LinkCustomerContactToOrder(Customer customer);
-        bool LinkDeliveryAddressToOrder(AddressVM address);
+        bool LinkDeliveryAddressToOrder(Address address);
+        bool LinkBillingContactToOrder(Contact contact);
 
         bool UpsertOrderPayment(Payment payment);
         IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId);

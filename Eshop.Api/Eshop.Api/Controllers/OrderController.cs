@@ -80,7 +80,7 @@ namespace Eshop.Api.Controllers
 		}
 
 		[HttpPost("linkDeliveryAddress")]
-		public IActionResult LinkDeliveryAddress([FromBody] AddressVM address)
+		public IActionResult LinkDeliveryAddress([FromBody] Address address)
 		{
 			return HandleResponse(() =>
 			{

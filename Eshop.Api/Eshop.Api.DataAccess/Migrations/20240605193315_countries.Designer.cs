@@ -4,6 +4,7 @@ using Eshop.Api.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eshop.Api.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240605193315_countries")]
+    partial class countries
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -100,8 +103,10 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.Property<int?>("AddressId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("int");
@@ -110,13 +115,13 @@ namespace Eshop.Api.DataAccess.Migrations
 
                     b.HasIndex("AddressId");
 
-                    b.HasIndex("CustomerId")
-                        .IsUnique()
-                        .HasFilter("[CustomerId] IS NOT NULL");
-
                     b.HasIndex("PersonId");
 
                     b.ToTable("Contacts");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Contact");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Eshop.Api.Models.Contacts.Country", b =>
@@ -164,36 +169,6 @@ namespace Eshop.Api.DataAccess.Migrations
                             IsEnabled = false,
                             Name = "Spojené státy americké"
                         });
-                });
-
-            modelBuilder.Entity("Eshop.Api.Models.Contacts.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ContactId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsLogged")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("NewsletterAgree")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("Eshop.Api.Models.Contacts.Person", b =>
@@ -330,7 +305,7 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.Property<int?>("AddressId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BillingContactId")
+                    b.Property<int?>("BillingAddressId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
@@ -361,7 +336,7 @@ namespace Eshop.Api.DataAccess.Migrations
 
                     b.HasIndex("AddressId");
 
-                    b.HasIndex("BillingContactId");
+                    b.HasIndex("BillingAddressId");
 
                     b.HasIndex("CurrencyId");
 
@@ -755,6 +730,27 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.ToTable("ProductPrices");
                 });
 
+            modelBuilder.Entity("Eshop.Api.Models.Contacts.Customer", b =>
+                {
+                    b.HasBaseType("Eshop.Api.Models.Contacts.Contact");
+
+                    b.Property<bool>("IsLogged")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NewsletterAgree")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("Customer");
+                });
+
             modelBuilder.Entity("Eshop.Api.Models.Contacts.Address", b =>
                 {
                     b.HasOne("Eshop.Api.Models.Contacts.AddressType", "AddressType")
@@ -780,11 +776,6 @@ namespace Eshop.Api.DataAccess.Migrations
                         .WithMany()
                         .HasForeignKey("AddressId");
 
-                    b.HasOne("Eshop.Api.Models.Contacts.Customer", "Customer")
-                        .WithOne("Contact")
-                        .HasForeignKey("Eshop.Api.Models.Contacts.Contact", "CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Eshop.Api.Models.Contacts.Person", "Person")
                         .WithMany()
                         .HasForeignKey("PersonId")
@@ -792,8 +783,6 @@ namespace Eshop.Api.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Address");
-
-                    b.Navigation("Customer");
 
                     b.Navigation("Person");
                 });
@@ -827,9 +816,9 @@ namespace Eshop.Api.DataAccess.Migrations
                         .HasForeignKey("AddressId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Eshop.Api.Models.Contacts.Contact", "BillingContact")
+                    b.HasOne("Eshop.Api.Models.Contacts.Address", "BillingAddress")
                         .WithMany()
-                        .HasForeignKey("BillingContactId");
+                        .HasForeignKey("BillingAddressId");
 
                     b.HasOne("Eshop.Api.Models.Currencies.Currency", "Currency")
                         .WithMany()
@@ -851,7 +840,7 @@ namespace Eshop.Api.DataAccess.Migrations
                         .WithMany()
                         .HasForeignKey("ShippingId");
 
-                    b.Navigation("BillingContact");
+                    b.Navigation("BillingAddress");
 
                     b.Navigation("Currency");
 
@@ -1010,11 +999,6 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.Navigation("Currency");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Eshop.Api.Models.Contacts.Customer", b =>
-                {
-                    b.Navigation("Contact");
                 });
 
             modelBuilder.Entity("Eshop.Api.Models.Images.Image", b =>

@@ -21,18 +21,23 @@ namespace Eshop.Api.BusinessLayer.Services.Contacts
         {
             if (customer.IsLogged && String.IsNullOrEmpty(customer.UserId)) throw new InvalidDataException("Unknown user identity");
             if (!customer.IsLogged && String.IsNullOrEmpty(customer.Token)) throw new ArgumentNullException("Token is missing for unauthenticated user");
+            if (customer.Contact == null) throw new InvalidDataException("Invalid contact information");
 
-            if (customer.Person != null)
+            if (customer.Contact.Person != null)
             {
-                var person = _unitOfWork.PersonRepository.Add(customer.Person, true);
-                customer.PersonId = person.Id;
+                var person = _unitOfWork.PersonRepository.Add(customer.Contact.Person, true);
+                customer.Contact.PersonId = person.Id;
             }
 
-            if (customer.Address != null)
+            if (customer.Contact.Address != null)
             {
-                var address = _unitOfWork.AddressRepository.Add(customer.Address, true);
-                customer.AddressId = address.Id;
+                var address = _unitOfWork.AddressRepository.Add(customer.Contact.Address, true);
+                customer.Contact.AddressId = address.Id;
             }
+
+            var contact = _unitOfWork.ContactRepository.Add(customer.Contact, true);
+            if (contact == null) throw new ArgumentNullException("Error storing contact");
+            customer.ContactId = contact.Id;
 
             return _unitOfWork.CustomerRepository.Add(customer, true);
         }

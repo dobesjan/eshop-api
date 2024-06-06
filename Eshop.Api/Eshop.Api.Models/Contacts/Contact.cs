@@ -22,5 +22,11 @@ namespace Eshop.Api.Models.Contacts
 		[ForeignKey(nameof(AddressId))]
 		[ValidateNever]
 		public Address Address { get; set; }
-	}
+
+        public int? CustomerId { get; set; }
+
+        [ForeignKey(nameof(CustomerId))]
+        [ValidateNever]
+        public Customer Customer { get; set; }
+    }
 }

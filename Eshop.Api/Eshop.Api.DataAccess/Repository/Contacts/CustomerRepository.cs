@@ -12,7 +12,7 @@ namespace Eshop.Api.DataAccess.Repository.Contacts
 {
 	public class CustomerRepository : Repository<Customer>, ICustomerRepository
 	{
-		private readonly string _properties = "Person,Address";
+		private readonly string _properties = "Contact.Person,Contact.Address";
 
 		public CustomerRepository(ApplicationDbContext db) : base(db)
 		{

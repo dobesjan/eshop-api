@@ -43,10 +43,12 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 		public IRepository<PaymentStatus> PaymentStatusRepository { get; private set; }
 
 		public IAddressRepository AddressRepository { get; private set; }
-		public IRepository<Person> PersonRepository { get; private set; }
+		public ICountryRepository CountryRepository { get; private set; }
+        public IRepository<Person> PersonRepository { get; private set; }
 		public ICustomerRepository CustomerRepository { get; private set; }
+		public IRepository<Contact> ContactRepository { get; private set; }
 
-		public UnitOfWork(ApplicationDbContext context)
+        public UnitOfWork(ApplicationDbContext context)
 		{
 			_context = context;
 			CategoryRepository = new CategoryRepository(context);
@@ -72,8 +74,10 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 			PaymentStatusRepository = new Repository<PaymentStatus>(context);
 
 			AddressRepository = new AddressRepository(context);
+			CountryRepository = new CountryRepository(context);
 			PersonRepository = new Repository<Person>(context);
 			CustomerRepository = new CustomerRepository(context);
+			ContactRepository = new Repository<Contact>(context);
 		}
 	}
 }

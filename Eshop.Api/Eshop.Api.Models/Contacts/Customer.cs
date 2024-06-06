@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Eshop.Api.Models.Contacts
 {
-    public class Customer : Contact
+    public class Customer : Entity
     {
         public bool NewsletterAgree { get; set; }
         public bool IsLogged { get; set; }
@@ -17,5 +17,11 @@ namespace Eshop.Api.Models.Contacts
         public string UserId { get; set; }
 
         public string Token { get; set; }
-	}
+
+        public int ContactId { get; set; }
+
+        [ForeignKey(nameof(ContactId))]
+        [ValidateNever]
+        public Contact? Contact { get; set; }
+    }
 }

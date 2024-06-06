@@ -45,7 +45,37 @@ namespace Eshop.Api.Models.Orders
 		public double CostWithTax { get; set; }
 		public double CostBefore { get; set; }
 
-		public override bool Validate()
+		[NotMapped]
+		[ValidateNever]
+		public string CostString
+		{
+			get
+			{
+				return GetCostWithCurrencyAcronym(Cost);
+			}
+		}
+
+        [NotMapped]
+        [ValidateNever]
+        public string CostWithTaxString
+        {
+            get
+            {
+                return GetCostWithCurrencyAcronym(CostWithTax);
+            }
+        }
+
+        [NotMapped]
+        [ValidateNever]
+        public string CostBeforeString
+        {
+            get
+            {
+                return GetCostWithCurrencyAcronym(CostBefore);
+            }
+        }
+
+        public override bool Validate()
 		{
 			if (ProductId <= 0) throw new InvalidDataException("Wrong value for productId");
 			if (OrderId <= 0) throw new InvalidDataException("Wrong value for orderId");
@@ -66,6 +96,11 @@ namespace Eshop.Api.Models.Orders
 					CostBefore = productPrice.CostBefore * Count;
 				}
 			}
+		}
+
+		private string GetCostWithCurrencyAcronym(double cost)
+		{
+			return $"{cost.ToString()} {Currency.Acronym}";
 		}
 
 		public override object ToJson()

@@ -113,7 +113,19 @@ namespace Eshop.Api.DataAccess.Data
 				.HasForeignKey(c => c.ParentCategoryId)
 				.OnDelete(DeleteBehavior.Restrict);
 
-			modelBuilder.Entity<AddressType>().HasData(
+            modelBuilder.Entity<Customer>()
+				.HasOne(c => c.Contact)
+				.WithMany()
+				.HasForeignKey(c => c.ContactId)
+				.OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Contact>()
+                .HasOne(c => c.Customer)
+                .WithOne(cu => cu.Contact)
+                .HasForeignKey<Contact>(c => c.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AddressType>().HasData(
 				new AddressType { Id = 1, Name = "Billing" },
 				new AddressType { Id = 2, Name = "Delivery" }
 			);
@@ -152,6 +164,12 @@ namespace Eshop.Api.DataAccess.Data
 				new PaymentStatus { Id = 1, Name = "Not paid" },
 				new PaymentStatus { Id = 2, Name = "Paid" }
 			);
+
+			modelBuilder.Entity<Country>().HasData(
+				new Country { Id = 1, Acronym = "CZ", IsEnabled = true, Name = "Česká republika" },
+                new Country { Id = 2, Acronym = "SK", IsEnabled = true, Name = "Slovenská republika" },
+                new Country { Id = 3, Acronym = "USA", IsEnabled = false, Name = "Spojené státy americké" }
+            );
 		}
 	}
 }

@@ -1,0 +1,29 @@
+﻿@model Order
+<h2>Cart</h2>
+@if (Model.OrderProducts != null && Model.OrderProducts.Any())
+{
+    foreach (var orderProduct in Model.OrderProducts)
+    {
+        <h3>@orderProduct.Product.Name</h3>
+        <p>Count: @orderProduct.Count</p>
+        <p>Cost: @orderProduct.CostString</p>
+        <p>Cost with tax: @orderProduct.CostWithTaxString</p>
+        @if(orderProduct.Product.IsInStock)
+        {
+            <p>Product is in stock.</p>
+        }
+        else
+        {
+            <p>Product is not in stock.</p>
+        }
+
+        @if (orderProduct.CostBefore > 0)
+        {
+            <p>@orderProduct.CostBeforeString</p>
+        }
+    }
+}
+else
+{
+    <h3>There are not any products in cart.</h3>
+}

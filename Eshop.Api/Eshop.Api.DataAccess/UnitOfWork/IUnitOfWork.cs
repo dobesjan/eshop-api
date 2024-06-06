@@ -41,7 +41,9 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 		IRepository<PaymentStatus> PaymentStatusRepository { get; }
 
 		IAddressRepository AddressRepository { get; }
+		ICountryRepository CountryRepository { get; }
 		IRepository<Person> PersonRepository { get; }
 		ICustomerRepository CustomerRepository { get; }
+		IRepository<Contact> ContactRepository { get; }
 	}
 }

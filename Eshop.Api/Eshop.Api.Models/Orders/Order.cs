@@ -44,11 +44,11 @@ namespace Eshop.Api.Models.Orders
 		[ValidateNever]
 		public Customer? Customer { get; set; }
 
-        public int? BillingAddressId { get; set; }
+        public int? BillingContactId { get; set; }
 
-        [ForeignKey(nameof(BillingAddressId))]
+        [ForeignKey(nameof(BillingContactId))]
         [ValidateNever]
-        public Address? BillingAddress { get; set; }
+        public Contact? BillingContact { get; set; }
 
         public int? AddressId { get; set; }
 
@@ -102,11 +102,11 @@ namespace Eshop.Api.Models.Orders
 			Validate();
 
 			if (Customer == null) throw new InvalidDataException("Customer data not filled");
-			if (Customer.Person == null) throw new InvalidDataException("Customer personal data not filled");
-			if (BillingAddress == null) throw new InvalidDataException("Billing address not filled");
+			if (Customer.Contact.Person == null) throw new InvalidDataException("Customer personal data not filled");
+			if (BillingContact == null) throw new InvalidDataException("Billing address not filled");
 
-			Customer.Person.Validate();
-            BillingAddress.Validate();
+			Customer.Contact.Person.Validate();
+            BillingContact.Validate();
 
 			return true;
 		}
