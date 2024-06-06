@@ -1,0 +1,53 @@
+﻿@model Order
+<h2>Order @Model.Id summary</h2>
+
+<h3>Products</h3>
+@foreach (var orderProduct in Model.OrderProducts)
+{
+    <h3>@orderProduct.Product.Name</h3>
+    <p>Count: @orderProduct.Count</p>
+    <p>Cost: @orderProduct.CostString</p>
+    <p>Cost with tax: @orderProduct.CostWithTaxString</p>
+    @if (orderProduct.Product.IsInStock)
+    {
+        <p>Product is in stock.</p>
+    }
+    else
+    {
+        <p>Product is not in stock.</p>
+    }
+
+    @if (orderProduct.CostBefore > 0)
+    {
+        <p>@orderProduct.CostBeforeString</p>
+    }
+}
+
+<h3>Total cost: @Model.Payment.Cost @Model.Currency.Acronym</h3>
+<h3>Total cost with tax: @Model.Payment.CostWithTax @Model.Currency.Acronym</h3>
+
+<h3>Payment method</h3>
+<p>@Model.Payment.PaymentMethod.Name</p>
+
+<h3>Shipping method</h3>
+<p>@Model.Shipping.Name</p>
+
+<h3>Billing address</h3>
+<p>First name: @Model.BillingContact.Person.FirstName</p>
+<p>Last name: @Model.BillingContact.Person.LastName</p>
+<p>Email: @Model.BillingContact.Person.Email</p>
+<p>Phone number: @Model.BillingContact.Person.PhoneNumber</p>
+<p>Street: @Model.BillingContact.Address.Street</p>
+<p>City: @Model.BillingContact.Address.City</p>
+<p>PostalCode: @Model.BillingContact.Address.PostalCode</p>
+<p>Country: @Model.BillingContact.Address.Country.Name</p>
+
+@if (Model.DeliveryAddress != null)
+{
+    <h3>Delivery address</h3>
+    <p>Street: @Model.DeliveryAddress.Street</p>
+    <p>City: @Model.DeliveryAddress.City</p>
+    <p>PostalCode: @Model.DeliveryAddress.PostalCode</p>
+    <p>Country: @Model.DeliveryAddress.Country.Name</p>
+}
+

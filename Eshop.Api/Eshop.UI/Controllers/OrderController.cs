@@ -249,6 +249,8 @@ namespace Eshop.UI.Controllers
 				var currency = _currencyService.GetPreferedCurrency(customer.Id);
 				_orderService.GeneratePayment(cart.Id, vm.PaymentMethod.Id, currency.Id);
 
+				cart.IsReadyToSend();
+
 				//TODO: Switch actions based on payment type
 				return RedirectToAction("Recapitulation");
 			}
@@ -267,6 +269,63 @@ namespace Eshop.UI.Controllers
 			}
 
 			return View(vm);
+		}
+
+		public IActionResult Recapitulation()
+		{
+			try
+			{
+				var customer = GetCustomer();
+				var order = _orderService.GetShoppingCart(customer.Id);
+
+				return View(order);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+
+			return Redirect("/");
+		}
+
+		[HttpPost]
+		public IActionResult Recapitulation(Order order)
+		{
+			if (order == null) return RedirectToAction("Index");
+
+			try
+			{
+				var customer = GetCustomer();
+
+				_orderService.SendOrder(customer.Id);
+
+				return RedirectToAction("Sent", new { order = order });
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+			catch (InvalidDataException ex)
+			{
+				//TODO: Consider how to handle errors
+				_logger.LogInformation(ex.Message);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+
+			return Redirect("/");
+		}
+
+		public IActionResult Sent(Order order)
+		{
+			if (order == null) return RedirectToAction("Index");
+			return View(order);
 		}
 
 		private void InitializeCountries()

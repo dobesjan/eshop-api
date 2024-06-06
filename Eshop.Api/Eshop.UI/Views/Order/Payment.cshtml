@@ -1,0 +1,32 @@
+﻿@model PaymentMethodVM
+
+<div class="card shadow border-0 mt-4">
+	<div class="card-header bg-secondary bg-gradient ml-0 py-3">
+		<div class="row">
+			<div class="col-12 text-center">
+				<h2 class="text-white py-2">Payment</h2>
+			</div>
+		</div>
+	</div>
+	<div class="card-body p-4">
+		<form method="post" class="row">
+			<div class="row">
+				<div class="border p-3">
+					<div asp-validation-summary="All"></div>
+					<div class="form-floating py-2 col-12">
+						<select asp-for="PaymentMethod" asp-items="@Model.PaymentMethods" class="form-select"></select>
+					</div>
+					<div class="row pt-2">
+						<div class="col-6 col-md-3">
+							<button type="submit" class="btn btn-primary form-control">Next</button>
+						</div>
+						<div class="col-6 col-md-3">
+							<a asp-action="Shipping" class="btn btn-outline-primary border form-control">Back</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</form>
+	</div>
+</div>
