@@ -10,5 +10,6 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 	public interface IShippingRepository : IRepository<Shipping>
 	{
 		Shipping GetEnabledShipping(int id);
+		IEnumerable<Shipping> GetEnabledShippingOptions(bool enabled = true);
 	}
 }

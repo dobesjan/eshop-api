@@ -19,7 +19,12 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 
 		public Shipping GetEnabledShipping(int id)
 		{
-			return Get(s => s.Id == id && s.Enabled == true && s.ShippingPaymentMethod != null, includeProperties: _properties);
+			return Get(s => s.Id == id && s.Enabled == true, includeProperties: _properties);
+		}
+
+		public IEnumerable<Shipping> GetEnabledShippingOptions(bool enabled = true)
+		{
+			return GetAll(s => s.Enabled == enabled, includeProperties: _properties);
 		}
 	}
 }

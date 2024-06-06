@@ -4,6 +4,7 @@ using Eshop.Api.DataAccess.Repository.Contacts;
 using Eshop.Api.DataAccess.Repository.Orders;
 using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.Api.Models.Contacts;
+using Eshop.Api.Models.Orders;
 using Eshop.UI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -18,7 +19,10 @@ namespace Eshop.UI.Controllers
         [BindProperty]
         public ContactVM AddressVM { get; set; }
 
-        public OrderController(ICustomerService customerService, ILogger<AccountController> logger, IOrderService orderService, IUnitOfWork unitOfWork) : base(customerService, logger)
+		[BindProperty]
+		public ShippingVM ShippingVM { get; set; }
+
+		public OrderController(ICustomerService customerService, ILogger<AccountController> logger, IOrderService orderService, IUnitOfWork unitOfWork) : base(customerService, logger)
         {
             _orderService = orderService;
             _unitOfWork = unitOfWork;
@@ -133,7 +137,64 @@ namespace Eshop.UI.Controllers
             return View(vm);
         }
 
-        private void InitializeCountries()
+		public IActionResult Shipping()
+		{
+			ShippingVM shippingVM = new ShippingVM();
+            InitializeShippingOptions();
+
+			try
+			{
+				var customer = GetCustomer();
+				var cart = _orderService.GetShoppingCart(customer.Id);
+				if (cart.Shipping != null)
+                {
+                    shippingVM.Shipping = cart.Shipping;
+                }
+
+				return View(shippingVM);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+
+			return Redirect("/");
+		}
+
+		[HttpPost]
+		public IActionResult Shipping(ShippingVM vm)
+		{
+			if (vm.Shipping == null) return View(vm);
+
+			try
+			{
+				var customer = GetCustomer();
+				_orderService.UpdateShipping(vm.Shipping.Id, customer.Id);
+
+				return RedirectToAction("Shipping");
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+			catch (InvalidDataException ex)
+			{
+				//TODO: Consider how to handle errors
+				_logger.LogInformation(ex.Message);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex.Message);
+			}
+
+			return View(vm);
+		}
+
+		private void InitializeCountries()
         {
             IEnumerable<Country> countries = _unitOfWork.CountryRepository.GetCountries();
 
@@ -146,5 +207,19 @@ namespace Eshop.UI.Controllers
                 });
             }
         }
-    }
+
+		private void InitializeShippingOptions()
+		{
+			IEnumerable<Shipping> shippingOptions = _unitOfWork.ShippingRepository.GetEnabledShippingOptions();
+
+			if (shippingOptions != null && shippingOptions.Any())
+			{
+				AddressVM.Countries = shippingOptions.Select(i => new SelectListItem
+				{
+					Text = i.Name,
+					Value = i.Id.ToString()
+				});
+			}
+		}
+	}
 }
