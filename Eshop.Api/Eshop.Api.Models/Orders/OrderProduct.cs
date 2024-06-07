@@ -35,12 +35,6 @@ namespace Eshop.Api.Models.Orders
 			}
 		}
 
-		public int CurrencyId { get; set; }
-
-		[ForeignKey(nameof(CurrencyId))]
-		[ValidateNever]
-		public Currency Currency { get; set; }
-
 		public double Cost { get; set; }
 		public double CostWithTax { get; set; }
 		public double CostBefore { get; set; }
@@ -86,9 +80,9 @@ namespace Eshop.Api.Models.Orders
 
 		private void RecalculateCosts()
 		{
-			if (Product != null && Currency != null)
+			if (Product != null && Order.Currency != null)
 			{
-				var productPrice = Product.ProductPrices?.FirstOrDefault(p => p.Currency.Id == CurrencyId);
+				var productPrice = Product.ProductPrices?.FirstOrDefault(p => p.Currency.Id == Order.CurrencyId);
 				if (productPrice != null)
 				{
 					Cost = productPrice.Cost * Count;
@@ -100,7 +94,7 @@ namespace Eshop.Api.Models.Orders
 
 		private string GetCostWithCurrencyAcronym(double cost)
 		{
-			return $"{cost.ToString()} {Currency.Acronym}";
+			return $"{cost.ToString()} {Order.Currency.Acronym}";
 		}
 
 		public override object ToJson()
@@ -109,7 +103,7 @@ namespace Eshop.Api.Models.Orders
 			{
 				Product = Product.ToJson(),
 				Count = Count,
-				Currency = Currency,
+				Currency = Order.Currency,
 				Cost = Cost,
 				CostWithTax = CostWithTax,
 				CostBefore = CostBefore,

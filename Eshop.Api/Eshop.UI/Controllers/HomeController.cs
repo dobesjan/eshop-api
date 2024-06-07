@@ -17,13 +17,11 @@ namespace Eshop.UI.Controllers
 	{
 		private readonly ILogger<HomeController> _logger;
 		private readonly ICustomerService _customerService;
-        private readonly IUnitOfWork _unitOfWork;
 
-		public HomeController(ILogger<HomeController> logger, ICustomerService customerService, IUnitOfWork unitOfWork) : base(customerService, logger)
+		public HomeController(ILogger<HomeController> logger, ICustomerService customerService) : base(customerService, logger)
         {
 			_logger = logger;
 			_customerService = customerService;
-            _unitOfWork = unitOfWork;
 		}
 
 		public IActionResult Index()
@@ -59,14 +57,12 @@ namespace Eshop.UI.Controllers
                         Person = person
                     };
 
-                    contact = _unitOfWork.ContactRepository.Add(contact, true);
-
                     customer = new Customer
                     {
                         NewsletterAgree = false,
                         IsLogged = true,
                         UserId = customerId,
-                        ContactId = contact.Id
+                        Contact = contact
                     };
 
                     try

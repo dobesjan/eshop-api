@@ -20,7 +20,7 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 
 		public Order GetShoppingCart(int customerId)
 		{
-			return Get(o => o.CustomerId.HasValue && o.CustomerId.Value == customerId && !o.IsOrdered);
+			return Get(o => o.CustomerId.HasValue && o.CustomerId.Value == customerId && !o.IsOrdered, includeProperties: _orderProperties);
 		}
 
 		public Order GetOrder(int orderId)

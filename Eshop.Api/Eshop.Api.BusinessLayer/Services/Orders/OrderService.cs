@@ -171,7 +171,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 			cart = new Order
 			{
-				Customer = customer,
+				CustomerId = customerId,
 				OrderStatusId = 1,
 				IsOrdered = false,
 				CreatedDate = DateTime.UtcNow,
@@ -336,7 +336,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			{
 				relation.ProductId = productId;
 				relation.OrderId = order.Id;
-				relation.CurrencyId = order.CurrencyId;
 				relation.Count = count;
 
 				_unitOfWork.OrderProductRepository.Update(relation, true);
@@ -347,7 +346,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				{
 					ProductId = productId,
 					OrderId = order.Id,
-					CurrencyId = order.CurrencyId,
 					Count = count
 				};
 				_unitOfWork.OrderProductRepository.Add(product, true);

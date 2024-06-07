@@ -4,6 +4,7 @@ using Eshop.Api.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eshop.Api.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240607142646_customerOptionalIdAndToken")]
+    partial class customerOptionalIdAndToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -392,10 +395,15 @@ namespace Eshop.Api.DataAccess.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
+                    b.Property<int>("CurrencyId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
                     b.HasKey("ProductId", "OrderId");
+
+                    b.HasIndex("CurrencyId");
 
                     b.HasIndex("OrderId");
 
@@ -859,6 +867,12 @@ namespace Eshop.Api.DataAccess.Migrations
 
             modelBuilder.Entity("Eshop.Api.Models.Orders.OrderProduct", b =>
                 {
+                    b.HasOne("Eshop.Api.Models.Currencies.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Eshop.Api.Models.Orders.Order", "Order")
                         .WithMany("OrderProducts")
                         .HasForeignKey("OrderId")
@@ -870,6 +884,8 @@ namespace Eshop.Api.DataAccess.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Currency");
 
                     b.Navigation("Order");
 

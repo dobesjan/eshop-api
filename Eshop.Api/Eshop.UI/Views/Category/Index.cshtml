@@ -17,5 +17,6 @@
                 <text>Unavailable</text>
             }
         </p>
+        @await Component.InvokeAsync("AddToCart", new AddToCartVM { ProductId = product.Id, FormId = product.Id.ToString() })
     }
 }

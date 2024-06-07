@@ -14,9 +14,9 @@ namespace Eshop.Api.Models.Contacts
         public bool NewsletterAgree { get; set; }
         public bool IsLogged { get; set; }
 
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
-        public string Token { get; set; }
+        public string? Token { get; set; }
 
         public int ContactId { get; set; }
 
