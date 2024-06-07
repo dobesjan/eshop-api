@@ -26,7 +26,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
         bool LinkCustomerContactToOrder(Customer customer);
         bool LinkDeliveryAddressToOrder(Address address);
-        bool LinkBillingContactToOrder(Contact contact);
+        bool LinkBillingContactToOrder(Contact contact, int customerId);
 
         bool UpsertOrderPayment(Payment payment, bool recalculate = false);
         bool GeneratePayment(int orderId, int paymentMethodId, int currencyId);

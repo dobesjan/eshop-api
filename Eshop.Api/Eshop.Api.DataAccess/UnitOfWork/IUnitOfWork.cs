@@ -45,5 +45,6 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 		IRepository<Person> PersonRepository { get; }
 		ICustomerRepository CustomerRepository { get; }
 		IRepository<Contact> ContactRepository { get; }
-	}
+        IRepository<CustomerContact> CustomerContactRepository { get; }
+    }
 }

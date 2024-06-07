@@ -32,7 +32,8 @@ namespace Eshop.Api.DataAccess.Data
 
 		public DbSet<Address> Addresses { get; set; }
 		public DbSet<Contact> Contacts { get; set; }
-		public DbSet<Customer> Customers { get; set; }
+        public DbSet<CustomerContact> CustomerContacts { get; set; }
+        public DbSet<Customer> Customers { get; set; }
 		public DbSet<Person> Persons { get; set; }
 
 		public DbSet<Currency> Currencies { get; set; }
@@ -118,10 +119,10 @@ namespace Eshop.Api.DataAccess.Data
 				.HasForeignKey(c => c.ContactId)
 				.OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Contact>()
+            modelBuilder.Entity<CustomerContact>()
                 .HasOne(c => c.Customer)
                 .WithOne(cu => cu.Contact)
-                .HasForeignKey<Contact>(c => c.CustomerId)
+                .HasForeignKey<CustomerContact>(c => c.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
 			modelBuilder.Entity<PaymentMethod>().HasData(

@@ -17,6 +17,7 @@ namespace Eshop.Api.DataAccess.Repository
         T Get(int id, string? includeProperties = null, bool tracked = false);
         T Add(T entity, bool save = false);
         T Update(T entity, bool save = false);
+        void Detach(T entity);
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entity);
         void Save();

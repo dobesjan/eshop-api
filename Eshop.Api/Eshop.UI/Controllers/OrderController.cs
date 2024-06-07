@@ -129,10 +129,10 @@ namespace Eshop.UI.Controllers
             try
             {
                 var customer = GetCustomer();
-                vm.BillingContact.CustomerId = customer.Id;
                 vm.BillingContact.Address.CustomerId = customer.Id;
                 vm.DeliveryAddress.CustomerId = customer.Id;
-                _orderService.LinkBillingContactToOrder(vm.BillingContact);
+                _orderService.LinkBillingContactToOrder(vm.BillingContact, customer.Id);
+                //TODO: Some problem is there... (Shipping, PaymentMethod fields only because of that...)
                 _orderService.LinkDeliveryAddressToOrder(vm.DeliveryAddress);
 
                 return RedirectToAction("Shipping");

@@ -1,4 +1,5 @@
 ﻿using Eshop.Api.Models.Interfaces;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,6 +16,7 @@ namespace Eshop.Api.Models.Orders
 
 		public bool Enabled { get; set; }
 
+		[ValidateNever]
 		public List<ShippingPaymentMethod> ShippingPaymentMethod { get; set; }
 	}
 }

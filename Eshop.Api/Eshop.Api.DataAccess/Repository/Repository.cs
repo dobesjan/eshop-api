@@ -46,7 +46,16 @@ namespace Eshop.Api.DataAccess.Repository
 			return entity;
 		}
 
-		public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
+		public void Detach(T entity)
+		{
+			var entry = dbset.Entry(entity);
+			if (entry.State != EntityState.Detached)
+			{
+				entry.State = EntityState.Detached;
+			}
+		}
+
+        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
 		{
 			IQueryable<T> query = GetInternal(includeProperties, tracked);
 			return query.Where(filter).FirstOrDefault();

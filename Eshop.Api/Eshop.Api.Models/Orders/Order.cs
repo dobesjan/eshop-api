@@ -57,7 +57,8 @@ namespace Eshop.Api.Models.Orders
 		public Address? DeliveryAddress { get; set; }
 
 		[InverseProperty(nameof(Order))]
-		public Payment? Payment { get; set; }
+        [ValidateNever]
+        public Payment? Payment { get; set; }
 
 		//DateTime when customer sent order
 		public DateTime? SentTime { get; set; }

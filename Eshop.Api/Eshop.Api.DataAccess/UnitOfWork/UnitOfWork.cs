@@ -47,6 +47,7 @@ namespace Eshop.Api.DataAccess.UnitOfWork
         public IRepository<Person> PersonRepository { get; private set; }
 		public ICustomerRepository CustomerRepository { get; private set; }
 		public IRepository<Contact> ContactRepository { get; private set; }
+		public IRepository<CustomerContact> CustomerContactRepository { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
 		{
@@ -78,6 +79,7 @@ namespace Eshop.Api.DataAccess.UnitOfWork
 			PersonRepository = new Repository<Person>(context);
 			CustomerRepository = new CustomerRepository(context);
 			ContactRepository = new Repository<Contact>(context);
+			CustomerContactRepository = new Repository<CustomerContact>(context);
 		}
 	}
 }

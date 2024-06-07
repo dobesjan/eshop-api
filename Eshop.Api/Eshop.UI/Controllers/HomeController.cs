@@ -52,7 +52,7 @@ namespace Eshop.UI.Controllers
                         LastName = User.Claims.FirstOrDefault(c => c.Type.Contains("surname"))?.Value
                     };
 
-                    var contact = new Contact
+                    var contact = new CustomerContact
                     {
                         Person = person
                     };

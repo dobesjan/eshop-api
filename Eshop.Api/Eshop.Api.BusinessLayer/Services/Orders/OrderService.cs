@@ -232,7 +232,10 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			if (selectedAddress != null)
 			{
 				order.AddressId = selectedAddress.Id;
-				_unitOfWork.OrderRepository.Update(order, true);
+
+				_unitOfWork.OrderRepository.Detach(order);
+				_unitOfWork.OrderRepository.Update(order);
+				_unitOfWork.OrderRepository.Save();
 
 				return true;
 			}
@@ -292,14 +295,13 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
-		public bool LinkBillingContactToOrder(Contact contact)
+		public bool LinkBillingContactToOrder(Contact contact, int customerId)
 		{
             if (contact == null) throw new ArgumentNullException("Customer is null");
             if (contact.Person == null) throw new ArgumentNullException("Person is null");
             if (contact.Address == null) throw new ArgumentNullException("Address is null");
-			if (!contact.CustomerId.HasValue) throw new ArgumentException("Customer is null");
 
-            Order order = GetShoppingCart(contact.CustomerId.Value);
+            Order order = GetShoppingCart(customerId);
 
             if (order == null)
             {
@@ -319,7 +321,10 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
             contact = UpsertEntity(contact, _unitOfWork.ContactRepository);
             order.BillingContactId = contact.Id;
-            _unitOfWork.OrderRepository.Update(order, true);
+
+            _unitOfWork.OrderRepository.Detach(order);
+            _unitOfWork.OrderRepository.Update(order);
+			_unitOfWork.OrderRepository.Save();
 
             return true;
         }

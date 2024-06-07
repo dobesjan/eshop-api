@@ -22,6 +22,6 @@ namespace Eshop.Api.Models.Contacts
 
         [ForeignKey(nameof(ContactId))]
         [ValidateNever]
-        public Contact? Contact { get; set; }
+        public CustomerContact? Contact { get; set; }
     }
 }
