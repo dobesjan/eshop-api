@@ -31,7 +31,6 @@ namespace Eshop.Api.DataAccess.Data
 		public DbSet<ShippingPaymentMethod> ShippingPaymentMethods { get; set; }
 
 		public DbSet<Address> Addresses { get; set; }
-		public DbSet<AddressType> AddressTypes { get; set; }
 		public DbSet<Contact> Contacts { get; set; }
 		public DbSet<Customer> Customers { get; set; }
 		public DbSet<Person> Persons { get; set; }
@@ -124,11 +123,6 @@ namespace Eshop.Api.DataAccess.Data
                 .WithOne(cu => cu.Contact)
                 .HasForeignKey<Contact>(c => c.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<AddressType>().HasData(
-				new AddressType { Id = 1, Name = "Billing" },
-				new AddressType { Id = 2, Name = "Delivery" }
-			);
 
 			modelBuilder.Entity<PaymentMethod>().HasData(
 				new PaymentMethod { Id = 1, Name = "Cash on delivery", Enabled = true },

@@ -12,12 +12,6 @@ namespace Eshop.Api.Models.Contacts
 {
     public class Address : Entity
     {
-		public int AddressTypeId { get; set; }
-
-		[ForeignKey(nameof(AddressTypeId))]
-		[ValidateNever]
-		public AddressType AddressType { get; set; }
-
 		public int CustomerId { get; set; }
 
 		[Required]

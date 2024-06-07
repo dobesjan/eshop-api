@@ -297,9 +297,9 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
             if (contact == null) throw new ArgumentNullException("Customer is null");
             if (contact.Person == null) throw new ArgumentNullException("Person is null");
             if (contact.Address == null) throw new ArgumentNullException("Address is null");
-			if (contact.Customer == null) throw new ArgumentException("Customer is null");
+			if (!contact.CustomerId.HasValue) throw new ArgumentException("Customer is null");
 
-            Order order = GetShoppingCart(contact.Customer.Id);
+            Order order = GetShoppingCart(contact.CustomerId.Value);
 
             if (order == null)
             {
@@ -336,7 +336,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			{
 				relation.ProductId = productId;
 				relation.OrderId = order.Id;
-				relation.Count = count;
+				relation.Count = relation.Count + count;
 
 				_unitOfWork.OrderProductRepository.Update(relation, true);
 			}

@@ -57,7 +57,7 @@
 						<span asp-validation-for="BillingContact.Address.PostalCode" class="text-danger"></span>
 					</div>
 					<div class="form-floating py-2 col-12">
-						<select asp-for="BillingContact.Address.Country" asp-items="@Model.Countries" class="form-select"></select>
+						<select asp-for="BillingContact.Address.CountryId" asp-items="@Model.Countries" class="form-select"></select>
 					</div>
 
 					<div class="form-floating py-2 col-12">
@@ -76,7 +76,7 @@
 						<span asp-validation-for="DeliveryAddress.PostalCode" class="text-danger"></span>
 					</div>
 					<div class="form-floating py-2 col-12">
-						<select asp-for="DeliveryAddress.Country" asp-items="@Model.Countries" class="form-select"></select>
+						<select asp-for="DeliveryAddress.CountryId" asp-items="@Model.Countries" class="form-select"></select>
 					</div>
 					<div class="row pt-2">
 						<div class="col-6 col-md-3">

@@ -68,9 +68,13 @@ namespace Eshop.UI.Controllers
 
         public IActionResult Address()
         {
-            ContactVM addressVM = new ContactVM();
-            addressVM.BillingContact = new Contact();
-            addressVM.DeliveryAddress = new Address();
+			if (AddressVM == null)
+			{
+				AddressVM = new ContactVM();
+			}
+
+            AddressVM.BillingContact = new Contact();
+            AddressVM.DeliveryAddress = new Address();
 
             try
             {
@@ -84,26 +88,26 @@ namespace Eshop.UI.Controllers
 
                     if (person != null)
                     {
-                        addressVM.BillingContact.PersonId = person.Id;
-                        addressVM.BillingContact.Person = person;
+                        AddressVM.BillingContact.PersonId = person.Id;
+                        AddressVM.BillingContact.Person = person;
 
                         if (customer.Contact.AddressId.HasValue)
                         {
                             var address = _unitOfWork.AddressRepository.Get(customer.Contact.AddressId.Value);
                             if (address != null)
                             {
-                                addressVM.BillingContact.AddressId = address.Id;
-                                addressVM.BillingContact.Address = address;
+                                AddressVM.BillingContact.AddressId = address.Id;
+                                AddressVM.BillingContact.Address = address;
                             }
                         }
                     }
                 }
                 else
                 {
-                    addressVM.BillingContact = cart.BillingContact;
+                    AddressVM.BillingContact = cart.BillingContact;
                 }
 
-                return View(addressVM);
+                return View(AddressVM);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -152,7 +156,11 @@ namespace Eshop.UI.Controllers
 
 		public IActionResult Shipping()
 		{
-			ShippingVM shippingVM = new ShippingVM();
+			if (ShippingVM == null)
+			{
+                ShippingVM = new ShippingVM();
+            }
+			
             InitializeShippingOptions();
 
 			try
@@ -161,10 +169,10 @@ namespace Eshop.UI.Controllers
 				var cart = _orderService.GetShoppingCart(customer.Id);
 				if (cart.Shipping != null)
                 {
-                    shippingVM.Shipping = cart.Shipping;
+                    ShippingVM.Shipping = cart.Shipping;
                 }
 
-				return View(shippingVM);
+				return View(ShippingVM);
 			}
 			catch (UnauthorizedAccessException ex)
 			{
@@ -209,7 +217,10 @@ namespace Eshop.UI.Controllers
 
 		public IActionResult Payment()
 		{
-			PaymentMethodVM paymentMethodVM = new PaymentMethodVM();
+			if (PaymentMethodVM == null)
+			{
+                PaymentMethodVM = new PaymentMethodVM();
+            }
 
 			try
 			{
@@ -220,9 +231,9 @@ namespace Eshop.UI.Controllers
 				InitializePaymentOptions(cart.ShippingId.Value);
 
 				//TODO: Consider if is worth resolve payment relation like this
-				if (cart.Payment != null )
+				if (cart.Payment != null) PaymentMethodVM.PaymentMethod = cart.Payment.PaymentMethod;
 
-				return View(paymentMethodVM);
+				return View(PaymentMethodVM);
 			}
 			catch (UnauthorizedAccessException ex)
 			{
