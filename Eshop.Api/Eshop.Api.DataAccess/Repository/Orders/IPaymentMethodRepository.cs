@@ -10,5 +10,7 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 	public interface IPaymentMethodRepository : IRepository<PaymentMethod>
 	{
 		bool IsPaymentMethodEnabled(int id);
+        bool IsPaymentMethodSupported(int id, int shippingId);
+        IEnumerable<PaymentMethod> GetPaymentMethodsForRepository(int shippingId);
 	}
 }

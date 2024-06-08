@@ -131,7 +131,7 @@ namespace Eshop.UI.Controllers
                 var customer = GetCustomer();
                 vm.BillingContact.Address.CustomerId = customer.Id;
                 vm.DeliveryAddress.CustomerId = customer.Id;
-                _orderService.LinkBillingContactToOrder(vm.BillingContact, customer.Id);
+                //_orderService.LinkBillingContactToOrder(vm.BillingContact, customer.Id);
                 //TODO: Some problem is there... (Shipping, PaymentMethod fields only because of that...)
                 _orderService.LinkDeliveryAddressToOrder(vm.DeliveryAddress);
 
@@ -167,9 +167,9 @@ namespace Eshop.UI.Controllers
 			{
 				var customer = GetCustomer();
 				var cart = _orderService.GetShoppingCart(customer.Id);
-				if (cart.Shipping != null)
+				if (cart.ShippingId.HasValue)
                 {
-                    ShippingVM.Shipping = cart.Shipping;
+                    ShippingVM.ShippingId = cart.ShippingId.Value;
                 }
 
 				return View(ShippingVM);
@@ -189,14 +189,14 @@ namespace Eshop.UI.Controllers
 		[HttpPost]
 		public IActionResult Shipping(ShippingVM vm)
 		{
-			if (vm.Shipping == null) return View(vm);
+			if (vm == null) return View(vm);
 
 			try
 			{
 				var customer = GetCustomer();
-				_orderService.UpdateShipping(vm.Shipping.Id, customer.Id);
+				_orderService.UpdateShipping(vm.ShippingId, customer.Id);
 
-				return RedirectToAction("Shipping");
+				return RedirectToAction("Payment");
 			}
 			catch (UnauthorizedAccessException ex)
 			{
@@ -231,7 +231,7 @@ namespace Eshop.UI.Controllers
 				InitializePaymentOptions(cart.ShippingId.Value);
 
 				//TODO: Consider if is worth resolve payment relation like this
-				if (cart.Payment != null) PaymentMethodVM.PaymentMethod = cart.Payment.PaymentMethod;
+				if (cart.Payment != null) PaymentMethodVM.PaymentMethodId = cart.Payment.PaymentMethod.Id;
 
 				return View(PaymentMethodVM);
 			}
@@ -250,7 +250,7 @@ namespace Eshop.UI.Controllers
 		[HttpPost]
 		public IActionResult Payment(PaymentMethodVM vm)
 		{
-			if (vm.PaymentMethod == null) return View(vm);
+			if (vm == null) return View(vm);
 
 			try
 			{
@@ -258,7 +258,7 @@ namespace Eshop.UI.Controllers
 				var cart = _orderService.GetShoppingCart(customer.Id);
 
 				var currency = _currencyService.GetPreferedCurrency(customer.Id);
-				_orderService.GeneratePayment(cart.Id, vm.PaymentMethod.Id, currency.Id);
+				_orderService.GeneratePayment(cart.Id, vm.PaymentMethodId, currency.Id);
 
 				cart.IsReadyToSend();
 

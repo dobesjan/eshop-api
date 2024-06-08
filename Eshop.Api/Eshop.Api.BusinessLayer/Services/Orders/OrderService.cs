@@ -450,7 +450,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			//TODO: Consider how to handle payment statuses
 			var paymentStatusId = 1;
 			if (!_unitOfWork.PaymentStatusRepository.IsStored(paymentStatusId)) throw new InvalidDataException($"Wrong payment status with id {paymentStatusId}");
-			CheckIfShippingSupportsPaymentMethod(paymentMethodId, orderId);
+			//CheckIfShippingSupportsPaymentMethod(paymentMethodId, orderId);
 
 			var order = GetOrder(orderId);
 			var cost = order.CalculateTotalCost(currencyId);
@@ -473,9 +473,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		public IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId)
 		{
-			//TODO: Fix
-			return _unitOfWork.PaymentMethodRepository.GetAll(pm => pm.ShippingPaymentMethod != null && pm.ShippingPaymentMethod.Exists(s => s.ShippingId == shippingId), includeProperties: "ShippingPaymentMethod");
-		}
+			return _unitOfWork.PaymentMethodRepository.GetPaymentMethodsForRepository(shippingId);
+        }
 
 		#endregion
 
@@ -484,7 +483,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 		public bool UpdateShippingInternal(int shippingId, Order order)
 		{
 			var shipping = _unitOfWork.ShippingRepository.GetEnabledShipping(shippingId);
-			if (shipping != null) throw new InvalidDataException("Shipping not supported");
+			if (shipping == null) throw new InvalidDataException("Shipping not supported");
 
             order.ShippingId = shippingId;
 

@@ -6,7 +6,7 @@ namespace Eshop.UI.Models
 {
 	public class PaymentMethodVM
 	{
-		public PaymentMethod PaymentMethod { get; set; }
+		public int PaymentMethodId { get; set; }
 		[ValidateNever]
 		public IEnumerable<SelectListItem> PaymentMethods { get; set; }
 	}

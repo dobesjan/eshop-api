@@ -6,7 +6,8 @@ namespace Eshop.UI.Models
 {
 	public class ShippingVM
 	{
-		public Shipping Shipping { get; set; }
+		public int ShippingId { get; set; }
+
 		[ValidateNever]
 		public IEnumerable<SelectListItem> ShippingOptions { get; set; }
 	}
