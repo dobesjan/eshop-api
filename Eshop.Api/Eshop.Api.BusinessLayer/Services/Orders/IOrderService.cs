@@ -29,7 +29,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
         bool LinkBillingContactToOrder(Contact contact, int customerId);
 
         bool UpsertOrderPayment(Payment payment, bool recalculate = false);
-        bool GeneratePayment(int orderId, int paymentMethodId, int currencyId);
+        bool GeneratePayment(int orderId, int paymentMethodId);
         //TODO: Add update method for payment status
         IEnumerable<PaymentMethod> GetPaymentMethodsForShipping(int shippingId);
 

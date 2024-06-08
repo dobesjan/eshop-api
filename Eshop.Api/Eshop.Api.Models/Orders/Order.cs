@@ -81,7 +81,12 @@ namespace Eshop.Api.Models.Orders
 			return 0;
 		}
 
-		public override bool Validate()
+        public double CalculateTotalCost(bool isWithTax = false)
+        {
+            return CalculateTotalCost(CurrencyId, isWithTax);
+        }
+
+        public override bool Validate()
 		{
 			/*
 			if (OrderProducts == null)

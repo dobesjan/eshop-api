@@ -216,6 +216,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				throw new InvalidDataException("Order not found in db!");
 			}
 
+            /*
 			Address selectedAddress = null;
 
 			if (order.AddressId.HasValue && order.AddressId > 0)
@@ -226,6 +227,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 					address.Id = selectedAddress.Id;
 				}
 			}
+			
 
 			selectedAddress = UpsertEntity(address, _unitOfWork.AddressRepository);
 
@@ -239,8 +241,30 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 				return true;
 			}
+			*/
 
-			throw new InvalidDataException("Error!");
+			
+            order.DeliveryAddress = address;
+
+            if (order.AddressId.HasValue)
+			{
+				order.DeliveryAddress.Id = order.AddressId.Value;
+            }
+
+            var selectedAddress = UpsertEntity(address, _unitOfWork.AddressRepository);
+
+            if (selectedAddress != null)
+            {
+                order.AddressId = selectedAddress.Id;
+
+                //_unitOfWork.OrderRepository.Detach(order);
+                _unitOfWork.OrderRepository.Update(order);
+                _unitOfWork.OrderRepository.Save();
+
+                return true;
+            }
+			
+            throw new InvalidDataException("Error!");
 		}
 
 		public bool LinkCustomerContactToOrder(Customer customer)
@@ -444,8 +468,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return UpsertEntity(payment, _unitOfWork.PaymentRepository) != null;
 		}
 
-		//TODO: Consider if currencyId is needed there when Currency is got from Order entity
-		public bool GeneratePayment(int orderId, int paymentMethodId, int currencyId)
+		public bool GeneratePayment(int orderId, int paymentMethodId)
 		{
 			if (!_unitOfWork.PaymentMethodRepository.IsPaymentMethodEnabled(paymentMethodId)) throw new InvalidDataException("Payment method not supported");
 			//TODO: Consider how to handle payment statuses
@@ -454,8 +477,13 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			//CheckIfShippingSupportsPaymentMethod(paymentMethodId, orderId);
 
 			var order = GetOrder(orderId);
-			var cost = order.CalculateTotalCost(currencyId);
-			var costWithTax = order.CalculateTotalCost(currencyId, true);
+			var cost = order.CalculateTotalCost();
+			var costWithTax = order.CalculateTotalCost(true);
+
+			if (order.Payment != null)
+			{
+				_unitOfWork.PaymentRepository.Remove(order.Payment);
+			}
 
 			var payment = new Payment
 			{
