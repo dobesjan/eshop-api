@@ -444,6 +444,7 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return UpsertEntity(payment, _unitOfWork.PaymentRepository) != null;
 		}
 
+		//TODO: Consider if currencyId is needed there when Currency is got from Order entity
 		public bool GeneratePayment(int orderId, int paymentMethodId, int currencyId)
 		{
 			if (!_unitOfWork.PaymentMethodRepository.IsPaymentMethodEnabled(paymentMethodId)) throw new InvalidDataException("Payment method not supported");
@@ -461,7 +462,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 				OrderId = orderId,
 				PaymentStatusId = paymentStatusId,
 				PaymentMethodId = paymentMethodId,
-				CurrencyId = currencyId,
 				Cost = cost,
 				CostWithTax = costWithTax
 			};

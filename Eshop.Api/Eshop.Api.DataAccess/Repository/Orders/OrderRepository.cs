@@ -12,7 +12,7 @@ namespace Eshop.Api.DataAccess.Repository.Orders
 {
 	public class OrderRepository : Repository<Order>, IOrderRepository
 	{
-		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,OrderProducts.Product.ProductPrices,Shipping,Customer,Customer.Contact,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod,Payment.Currency,Currency";
+		private readonly string _orderProperties = "OrderStatus,OrderProducts.Product,OrderProducts.Product.ProductPrices,Shipping,Customer,Customer.Contact,DeliveryAddress,Payment.PaymentStatus,Payment.PaymentMethod,Currency";
 
 		public OrderRepository(ApplicationDbContext db) : base(db)
 		{

@@ -31,11 +31,25 @@ namespace Eshop.Api.Models.Orders
 		[ValidateNever]
 		public PaymentMethod PaymentMethod { get; set; }
 
-		public int CurrencyId { get; set; }
+        [ValidateNever]
+		[NotMapped]
+        public int CurrencyId 
+		{
+			get
+			{
+				return Order.CurrencyId;
+			}
+		}
 
-		[ForeignKey(nameof(CurrencyId))]
 		[ValidateNever]
-		public Currency Currency { get; set; }
+        [NotMapped]
+        public Currency Currency
+		{
+			get
+			{
+				return Order.Currency;
+			}
+		}
 
 		public double Cost { get; set; }
 		public double CostWithTax { get; set; }
