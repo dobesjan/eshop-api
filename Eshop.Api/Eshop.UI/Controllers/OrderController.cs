@@ -256,9 +256,7 @@ namespace Eshop.UI.Controllers
 			{
 				var customer = GetCustomer();
 				var cart = _orderService.GetShoppingCart(customer.Id);
-
-				var currency = _currencyService.GetPreferedCurrency(customer.Id);
-				_orderService.GeneratePayment(cart.Id, vm.PaymentMethodId, currency.Id);
+				_orderService.GeneratePayment(cart.Id, vm.PaymentMethodId);
 
 				cart.IsReadyToSend();
 
