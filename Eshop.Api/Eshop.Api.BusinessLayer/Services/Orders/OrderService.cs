@@ -215,34 +215,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			{
 				throw new InvalidDataException("Order not found in db!");
 			}
-
-            /*
-			Address selectedAddress = null;
-
-			if (order.AddressId.HasValue && order.AddressId > 0)
-			{
-				selectedAddress = _unitOfWork.AddressRepository.GetAddress(order.AddressId.Value);
-				if (selectedAddress != null)
-				{
-					address.Id = selectedAddress.Id;
-				}
-			}
-			
-
-			selectedAddress = UpsertEntity(address, _unitOfWork.AddressRepository);
-
-			if (selectedAddress != null)
-			{
-				order.AddressId = selectedAddress.Id;
-
-				_unitOfWork.OrderRepository.Detach(order);
-				_unitOfWork.OrderRepository.Update(order);
-				_unitOfWork.OrderRepository.Save();
-
-				return true;
-			}
-			*/
-
 			
             order.DeliveryAddress = address;
 
@@ -281,24 +253,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			{
 				throw new InvalidDataException("Order not found in db!");
 			}
-
-            /*
-			if (order.CustomerId.HasValue && order.CustomerId > 0)
-			{
-				var selectedCustomer = _unitOfWork.CustomerRepository.GetCustomer(order.CustomerId.Value);
-				if (selectedCustomer != null)
-				{
-					customerVM.Customer.Id = selectedCustomer.Id;
-					customerVM.Customer.PersonId = selectedCustomer.PersonId;
-					customerVM.Customer.Person.Id = selectedCustomer.PersonId;
-					customerVM.Customer.AddressId = selectedCustomer.AddressId;
-					if (selectedCustomer.AddressId.HasValue)
-					{
-						customerVM.Customer.Address.Id = selectedCustomer.AddressId.Value;
-					}
-				}
-			}
-			*/
 
             customer.Contact.Person.Validate();
             customer.Contact.Address.Validate();
@@ -345,7 +299,12 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
             contact = UpsertEntity(contact, _unitOfWork.ContactRepository);
             order.BillingContactId = contact.Id;
 
-            _unitOfWork.OrderRepository.Update(order);
+			_unitOfWork.OrderRepository.Detach(order);
+			if (order.BillingContact != null)
+			{
+				_unitOfWork.ContactRepository.Detach(order.BillingContact);
+			}
+			_unitOfWork.OrderRepository.Update(order);
 			_unitOfWork.OrderRepository.Save();
 
             return true;

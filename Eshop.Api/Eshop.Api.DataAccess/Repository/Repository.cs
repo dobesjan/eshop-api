@@ -36,6 +36,7 @@ namespace Eshop.Api.DataAccess.Repository
 
 		public T Update(T entity, bool save = false)
 		{
+			_db.ChangeTracker.Clear();
 			dbset.Update(entity);
 
 			if (save)
