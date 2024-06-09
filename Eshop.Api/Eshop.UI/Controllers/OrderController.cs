@@ -107,6 +107,11 @@ namespace Eshop.UI.Controllers
                     AddressVM.BillingContact = cart.BillingContact;
                 }
 
+				if (cart.DeliveryAddress != null)
+				{
+					AddressVM.DeliveryAddress = cart.DeliveryAddress;
+				}
+
                 return View(AddressVM);
             }
             catch (UnauthorizedAccessException ex)
@@ -131,8 +136,8 @@ namespace Eshop.UI.Controllers
                 var customer = GetCustomer();
                 vm.BillingContact.Address.CustomerId = customer.Id;
                 vm.DeliveryAddress.CustomerId = customer.Id;
-                //_orderService.LinkBillingContactToOrder(vm.BillingContact, customer.Id);
-                //TODO: Some problem is there... (Shipping, PaymentMethod fields only because of that...)
+                _orderService.LinkBillingContactToOrder(vm.BillingContact, customer.Id);
+                //TODO: Problem due to two address methods..
                 _orderService.LinkDeliveryAddressToOrder(vm.DeliveryAddress);
 
                 return RedirectToAction("Shipping");

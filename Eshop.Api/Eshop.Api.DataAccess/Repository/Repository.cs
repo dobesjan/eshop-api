@@ -24,7 +24,7 @@ namespace Eshop.Api.DataAccess.Repository
 
 		public T Add(T entity, bool save = false)
 		{
-			dbset.Add(entity);
+            dbset.Add(entity);
 
 			if (save)
 			{
@@ -71,7 +71,6 @@ namespace Eshop.Api.DataAccess.Repository
 		{
 			IQueryable<T> query;
 
-
 			if (tracked)
 			{
 				query = dbset;
@@ -79,7 +78,7 @@ namespace Eshop.Api.DataAccess.Repository
 			else
 			{
 				//Db will not be automatically updated on entity change
-				query = dbset.AsNoTracking();
+				query = dbset.AsNoTrackingWithIdentityResolution();
 			} 
 
 			if (!string.IsNullOrEmpty(includeProperties))
@@ -96,7 +95,7 @@ namespace Eshop.Api.DataAccess.Repository
 
 		public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, int offset = 0, int limit = 0)
 		{
-			IQueryable<T> query = dbset;
+			IQueryable<T> query = dbset.AsNoTrackingWithIdentityResolution();
 			if (filter != null)
 			{
 				query = query.Where(filter);

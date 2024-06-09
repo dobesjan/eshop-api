@@ -26,7 +26,7 @@ namespace Eshop.Api.BusinessLayer.Services
 					}
 
 					entity = repository.Update(entity, true);
-				}
+                }
 				else
 				{
 					entity = repository.Add(entity, true);

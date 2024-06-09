@@ -257,7 +257,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
             {
                 order.AddressId = selectedAddress.Id;
 
-                //_unitOfWork.OrderRepository.Detach(order);
                 _unitOfWork.OrderRepository.Update(order);
                 _unitOfWork.OrderRepository.Save();
 
@@ -346,7 +345,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
             contact = UpsertEntity(contact, _unitOfWork.ContactRepository);
             order.BillingContactId = contact.Id;
 
-            _unitOfWork.OrderRepository.Detach(order);
             _unitOfWork.OrderRepository.Update(order);
 			_unitOfWork.OrderRepository.Save();
 
