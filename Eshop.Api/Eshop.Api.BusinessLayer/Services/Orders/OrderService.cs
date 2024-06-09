@@ -65,6 +65,8 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			order.IsOrdered = true;
 
 			_unitOfWork.OrderRepository.Update(order);
+			_unitOfWork.OrderRepository.Save();
+
 			return true;
 		}
 

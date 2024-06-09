@@ -263,6 +263,7 @@ namespace Eshop.UI.Controllers
 				var cart = _orderService.GetShoppingCart(customer.Id);
 				_orderService.GeneratePayment(cart.Id, vm.PaymentMethodId);
 
+				//TODO: COnsider if it's worth here
 				cart.IsReadyToSend();
 
 				//TODO: Switch actions based on payment type
@@ -336,11 +337,39 @@ namespace Eshop.UI.Controllers
 			return Redirect("/");
 		}
 
-		public IActionResult Sent(Order order)
+		public IActionResult Sent()
 		{
+            /*
 			if (order == null) return RedirectToAction("Index");
 			return View(order);
-		}
+			*/
+
+            try
+            {
+                var customer = GetCustomer();
+                var cart = _orderService.GetShoppingCart(customer.Id);
+				if (cart == null) return RedirectToAction("Index");
+
+                _orderService.SendOrder(customer.Id);
+
+                return View(cart);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+            catch (InvalidDataException ex)
+            {
+                //TODO: Consider how to handle errors
+                _logger.LogInformation(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+
+            return Redirect("/");
+        }
 
 		private void InitializeCountries()
         {
