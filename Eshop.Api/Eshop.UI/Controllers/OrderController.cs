@@ -150,10 +150,13 @@ namespace Eshop.UI.Controllers
             {
                 //TODO: Consider how to handle errors
                 _logger.LogInformation(ex.Message);
+				ModelState.Clear();
+                ModelState.AddModelError(string.Empty, ex.Message);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
+                ModelState.AddModelError(string.Empty, "An error occurred while processing your request.");
             }
 
             return View(vm);

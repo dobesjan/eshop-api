@@ -21,10 +21,10 @@ namespace Eshop.Api.Models.Contacts
 
 		public override bool Validate()
 		{
-			if (FirstName == String.Empty) throw new InvalidDataException("First name not provided");
-			if (LastName == String.Empty) throw new InvalidDataException("Last name not provided");
-			if (Email == String.Empty) throw new InvalidDataException("Email name not provided");
-			if (PhoneNumber == String.Empty) throw new InvalidDataException("Phone number name not provided");
+			if (String.IsNullOrEmpty(FirstName)) throw new InvalidDataException("First name not provided");
+			if (String.IsNullOrEmpty(LastName)) throw new InvalidDataException("Last name not provided");
+			if (String.IsNullOrEmpty(Email)) throw new InvalidDataException("Email name not provided");
+			if (String.IsNullOrEmpty(PhoneNumber)) throw new InvalidDataException("Phone number name not provided");
 
 			return true;
 		}

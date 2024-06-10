@@ -31,9 +31,9 @@ namespace Eshop.Api.Models.Contacts
 
 		public override bool Validate()
 		{
-			if (Street == String.Empty) throw new InvalidDataException("Street not provided");
-			if (City == String.Empty) throw new InvalidDataException("City not provided");
-			if (PostalCode == String.Empty) throw new InvalidDataException("Postal code not provided");
+			if (String.IsNullOrEmpty(Street)) throw new InvalidDataException("Street not provided");
+			if (String.IsNullOrEmpty(City)) throw new InvalidDataException("City not provided");
+			if (String.IsNullOrEmpty(PostalCode)) throw new InvalidDataException("Postal code not provided");
 			if (CountryId <= 0) throw new InvalidDataException("Country not provided");
 
 			return true;
