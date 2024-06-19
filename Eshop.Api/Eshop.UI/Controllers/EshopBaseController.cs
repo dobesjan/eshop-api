@@ -69,5 +69,27 @@ namespace Eshop.UI.Controllers
 
 			return _customerService.CreateCustomer(customer);
 		}
-	}
+
+        protected IActionResult HandleResponse(Func<IActionResult> action, IActionResult errorResult)
+        {
+            try
+            {
+                return action();
+            }
+            catch (InvalidDataException ex)
+            {
+                _logger.LogInformation(ex, ex.Message);
+                ModelState.Clear();
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return errorResult;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                ModelState.Clear();
+                ModelState.AddModelError(string.Empty, "An error occurred while processing your request.");
+                return errorResult;
+            }
+        }
+    }
 }

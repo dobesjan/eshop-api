@@ -15,7 +15,6 @@ namespace Eshop.UI.Controllers
 {
     public class OrderController : EshopBaseController
     {
-		private readonly ICurrencyService _currencyService;
         private readonly IOrderService _orderService;
         private readonly IUnitOfWork _unitOfWork;
 
@@ -32,11 +31,9 @@ namespace Eshop.UI.Controllers
 			ICustomerService customerService,
 			ILogger<AccountController> logger,
 			IOrderService orderService,
-			IUnitOfWork unitOfWork,
-			ICurrencyService currencyService
+			IUnitOfWork unitOfWork
 			) : base(customerService, logger)
         {
-			_currencyService = currencyService;
             _orderService = orderService;
             _unitOfWork = unitOfWork;
 
@@ -48,22 +45,9 @@ namespace Eshop.UI.Controllers
 
         public IActionResult Index()
         {
-            try
-            {
-                var customer = GetCustomer();
-                var cart = _orderService.GetShoppingCart(customer.Id);
-                return View(cart);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-
-            return Redirect("/");
+            var customer = GetCustomer();
+            var cart = _orderService.GetShoppingCart(customer.Id);
+            return View(cart);
         }
 
         public IActionResult Address()
@@ -129,10 +113,10 @@ namespace Eshop.UI.Controllers
         [HttpPost]
         public IActionResult Address(ContactVM vm)
         {
-            if (vm.BillingContact == null) return View(vm);
-
-            try
+            return HandleResponse(() =>
             {
+                if (vm.BillingContact == null) return View(vm);
+
                 var customer = GetCustomer();
                 vm.BillingContact.Address.CustomerId = customer.Id;
                 vm.DeliveryAddress.CustomerId = customer.Id;
@@ -141,25 +125,7 @@ namespace Eshop.UI.Controllers
                 _orderService.LinkDeliveryAddressToOrder(vm.DeliveryAddress);
 
                 return RedirectToAction("Shipping");
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-            catch (InvalidDataException ex)
-            {
-                //TODO: Consider how to handle errors
-                _logger.LogInformation(ex.Message);
-				ModelState.Clear();
-                ModelState.AddModelError(string.Empty, ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ModelState.AddModelError(string.Empty, "An error occurred while processing your request.");
-            }
-
-            return View(vm);
+            }, View(vm));
         }
 
 		public IActionResult Shipping()
@@ -197,31 +163,16 @@ namespace Eshop.UI.Controllers
 		[HttpPost]
 		public IActionResult Shipping(ShippingVM vm)
 		{
-			if (vm == null) return View(vm);
+            return HandleResponse(() =>
+            {
+                if (vm == null) return View(vm);
 
-			try
-			{
-				var customer = GetCustomer();
-				_orderService.UpdateShipping(vm.ShippingId, customer.Id);
+                var customer = GetCustomer();
+                _orderService.UpdateShipping(vm.ShippingId, customer.Id);
 
-				return RedirectToAction("Payment");
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-			catch (InvalidDataException ex)
-			{
-				//TODO: Consider how to handle errors
-				_logger.LogInformation(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-
-			return View(vm);
-		}
+                return RedirectToAction("Payment");
+            }, View(vm));
+        }
 
 		public IActionResult Payment()
 		{
@@ -258,36 +209,21 @@ namespace Eshop.UI.Controllers
 		[HttpPost]
 		public IActionResult Payment(PaymentMethodVM vm)
 		{
-			if (vm == null) return View(vm);
+            return HandleResponse(() =>
+            {
+                if (vm == null) return View(vm);
 
-			try
-			{
-				var customer = GetCustomer();
-				var cart = _orderService.GetShoppingCart(customer.Id);
-				_orderService.GeneratePayment(cart.Id, vm.PaymentMethodId);
+                var customer = GetCustomer();
+                var cart = _orderService.GetShoppingCart(customer.Id);
+                _orderService.GeneratePayment(cart.Id, vm.PaymentMethodId);
 
-				//TODO: COnsider if it's worth here
-				cart.IsReadyToSend();
+                //TODO: COnsider if it's worth here
+                cart.IsReadyToSend();
 
-				//TODO: Switch actions based on payment type
-				return RedirectToAction("Recapitulation");
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-			catch (InvalidDataException ex)
-			{
-				//TODO: Consider how to handle errors
-				_logger.LogInformation(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-
-			return View(vm);
-		}
+                //TODO: Switch actions based on payment type
+                return RedirectToAction("Recapitulation");
+            }, View(vm));
+        }
 
 		public IActionResult Recapitulation()
 		{
@@ -313,32 +249,16 @@ namespace Eshop.UI.Controllers
 		[HttpPost]
 		public IActionResult Recapitulation(Order order)
 		{
-			if (order == null) return RedirectToAction("Index");
+            return HandleResponse(() =>
+            {
+                if (order == null) return RedirectToAction("Index");
 
-			try
-			{
-				var customer = GetCustomer();
+                var customer = GetCustomer();
+                _orderService.SendOrder(customer.Id);
 
-				_orderService.SendOrder(customer.Id);
-
-				return RedirectToAction("Sent", new { order = order });
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-			catch (InvalidDataException ex)
-			{
-				//TODO: Consider how to handle errors
-				_logger.LogInformation(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-
-			return Redirect("/");
-		}
+                return RedirectToAction("Sent", new { order = order });
+            }, Redirect("/"));
+        }
 
 		public IActionResult Sent()
 		{
