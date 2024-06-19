@@ -70,16 +70,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
-		public bool CreateOrder(Order order)
-		{
-			if (order == null) throw new ArgumentNullException("Order is null");
-			order.Validate();
-
-			_unitOfWork.OrderRepository.Add(order);
-			_unitOfWork.OrderRepository.Save();
-			return true;
-		}
-
 		public IEnumerable<Order> GetOrders(int offset = 0, int limit = 0)
 		{
 			return _unitOfWork.OrderRepository.GetOrders(offset, limit);
@@ -240,40 +230,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
             throw new InvalidDataException("Error!");
 		}
 
-		public bool LinkCustomerContactToOrder(Customer customer)
-		{
-			//TODO: Consider split - maybe to repository
-			if (customer == null) throw new ArgumentNullException("Customer is null");
-            if (customer.Contact == null) throw new ArgumentNullException("Contact is null");
-            if (customer.Contact.Person == null) throw new ArgumentNullException("Person is null");
-			if (customer.Contact.Address == null) throw new ArgumentNullException("Address is null");
-            if (customer.Id <= 0) throw new ArgumentNullException("Customer identity unknown!");
-
-            Order order = GetShoppingCart(customer.Id);
-
-			if (order == null)
-			{
-				throw new InvalidDataException("Order not found in db!");
-			}
-
-            customer.Contact.Person.Validate();
-            customer.Contact.Address.Validate();
-
-			var person = UpsertEntity(customer.Contact.Person, _unitOfWork.PersonRepository);
-			var address = UpsertEntity(customer.Contact.Address, _unitOfWork.AddressRepository);
-			if (person == null) throw new ArgumentNullException("Error storing person");
-			if (address == null) throw new ArgumentNullException("Error storing address");
-
-			customer.Contact.AddressId = address.Id;
-			customer.Contact.PersonId = person.Id;
-
-			customer = UpsertEntity(customer, _unitOfWork.CustomerRepository);
-			order.CustomerId = customer.Id;
-			_unitOfWork.OrderRepository.Update(order, true);
-
-			return true;
-		}
-
 		public bool LinkBillingContactToOrder(Contact contact, int customerId)
 		{
             if (contact == null) throw new ArgumentNullException("Customer is null");
@@ -342,17 +298,6 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return true;
 		}
 
-		private bool RemoveProductFromOrderInternal(int productId, int orderId)
-		{
-			var product = _unitOfWork.OrderProductRepository.GetOrderProduct(productId, orderId);
-			if (product == null) throw new InvalidDataException("Product not found");
-
-			_unitOfWork.OrderProductRepository.Remove(product);
-			_unitOfWork.OrderProductRepository.Save();
-
-			return true;
-		}
-
 		public bool AddProductToOrder(OrderProduct product)
 		{
 			if (product == null) throw new ArgumentNullException("Order product is null");
@@ -372,24 +317,17 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 			return CreateProductToOrderRelation(productId, count, cart);
 		}
 
-		public bool AddProductsToOrder(IEnumerable<OrderProduct> products)
-		{
-			//TODO: Consider optimization - such as bulk inserts
-
-			foreach (var product in products)
-			{
-				AddProductToOrder(product);
-			}
-
-			return true;
-		}
-
 		public bool RemoveProductFromOrder(int productId, int customerId)
 		{
 			var cart = GetShoppingCart(customerId);
-			RemoveProductFromOrderInternal(productId, cart.Id);
 
-			return true;
+            var product = _unitOfWork.OrderProductRepository.GetOrderProduct(productId, cart.Id);
+            if (product == null) throw new InvalidDataException("Product not found");
+
+            _unitOfWork.OrderProductRepository.Remove(product);
+            _unitOfWork.OrderProductRepository.Save();
+
+            return true;
 		}
 
 		#endregion
@@ -467,25 +405,19 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 
 		#region Shipping
 
-		public bool UpdateShippingInternal(int shippingId, Order order)
-		{
-			var shipping = _unitOfWork.ShippingRepository.GetEnabledShipping(shippingId);
-			if (shipping == null) throw new InvalidDataException("Shipping not supported");
-
-            order.ShippingId = shippingId;
-
-			_unitOfWork.OrderRepository.Update(order);
-			_unitOfWork.OrderRepository.Save();
-
-            return true;
-		}
-
 		public bool UpdateShipping(int shippingId, int customerId)
 		{
 			var cart = GetShoppingCart(customerId);
-			UpdateShippingInternal(shippingId, cart);
 
-			return true;
+            var shipping = _unitOfWork.ShippingRepository.GetEnabledShipping(shippingId);
+            if (shipping == null) throw new InvalidDataException("Shipping not supported");
+
+            cart.ShippingId = shippingId;
+
+            _unitOfWork.OrderRepository.Update(cart);
+            _unitOfWork.OrderRepository.Save();
+
+            return true;
 		}
 
 		public IEnumerable<Order> GetOrdersByShipping(int shippingId, int offset = 0, int limit = 0)

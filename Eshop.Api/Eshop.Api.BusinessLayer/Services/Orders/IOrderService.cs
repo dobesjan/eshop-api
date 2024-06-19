@@ -14,17 +14,14 @@ namespace Eshop.Api.BusinessLayer.Services.Orders
 {
     public interface IOrderService : IEshopService
     {
-        bool CreateOrder(Order order);
         bool UpdateOrder(Order order);
         bool UpdateOrderStatus(int statusId, int customerId);
         bool SendOrder(int customerId);
 
         bool AddProductToOrder(OrderProduct product);
         bool AddProductToOrder(int productId, int customerId, int count);
-        bool AddProductsToOrder(IEnumerable<OrderProduct> products);
         bool RemoveProductFromOrder(int productId, int customerId);
 
-        bool LinkCustomerContactToOrder(Customer customer);
         bool LinkDeliveryAddressToOrder(Address address);
         bool LinkBillingContactToOrder(Contact contact, int customerId);
 

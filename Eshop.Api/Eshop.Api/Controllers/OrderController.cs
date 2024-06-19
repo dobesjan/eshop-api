@@ -89,16 +89,6 @@ namespace Eshop.Api.Controllers
 			}, "Problem while saving address!");
 		}
 
-		[HttpPost("linkCustomer")]
-		public IActionResult LinkCustomer([FromBody] Customer customer)
-		{
-			return HandleResponse(() =>
-			{
-				var success = _orderService.LinkCustomerContactToOrder(customer);
-				return CreateResult(success: success, successMessage: "Customer saved successfully!", errorMessage: "Problem while saving customer!");
-			}, "Problem while saving customer!");
-		}
-
 		[HttpPost("savePayment")]
 		public IActionResult SavePayment([FromBody] Payment payment)
 		{
