@@ -60,15 +60,15 @@ namespace Eshop.UI.Controllers
             AddressVM.BillingContact = new Contact();
             AddressVM.DeliveryAddress = new Address();
 
-            try
-            {
-                var customer = GetCustomer();
-                var cart = _orderService.GetShoppingCart(customer.Id);
-                InitializeCountries();
+            var customer = GetCustomer();
+            var cart = _orderService.GetShoppingCart(customer.Id);
+            InitializeCountries();
 
-                if (cart.BillingContact == null)
+            if (cart.BillingContact == null)
+            {
+                if (customer.Contact != null)
                 {
-                    var person = _unitOfWork.PersonRepository.Get(customer.Contact.PersonId);
+                    var person = customer.Contact.Person;
 
                     if (person != null)
                     {
@@ -77,7 +77,7 @@ namespace Eshop.UI.Controllers
 
                         if (customer.Contact.AddressId.HasValue)
                         {
-                            var address = _unitOfWork.AddressRepository.Get(customer.Contact.AddressId.Value);
+                            var address = customer.Contact.Address;
                             if (address != null)
                             {
                                 AddressVM.BillingContact.AddressId = address.Id;
@@ -86,28 +86,18 @@ namespace Eshop.UI.Controllers
                         }
                     }
                 }
-                else
-                {
-                    AddressVM.BillingContact = cart.BillingContact;
-                }
-
-				if (cart.DeliveryAddress != null)
-				{
-					AddressVM.DeliveryAddress = cart.DeliveryAddress;
-				}
-
-                return View(AddressVM);
             }
-            catch (UnauthorizedAccessException ex)
+            else
             {
-                _logger.LogError(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
+                AddressVM.BillingContact = cart.BillingContact;
             }
 
-            return Redirect("/");
+			if (cart.DeliveryAddress != null)
+			{
+				AddressVM.DeliveryAddress = cart.DeliveryAddress;
+			}
+
+            return View(AddressVM);
         }
 
         [HttpPost]
@@ -121,7 +111,6 @@ namespace Eshop.UI.Controllers
                 vm.BillingContact.Address.CustomerId = customer.Id;
                 vm.DeliveryAddress.CustomerId = customer.Id;
                 _orderService.LinkBillingContactToOrder(vm.BillingContact, customer.Id);
-                //TODO: Problem due to two address methods..
                 _orderService.LinkDeliveryAddressToOrder(vm.DeliveryAddress);
 
                 return RedirectToAction("Shipping");
@@ -137,27 +126,14 @@ namespace Eshop.UI.Controllers
 			
             InitializeShippingOptions();
 
-			try
-			{
-				var customer = GetCustomer();
-				var cart = _orderService.GetShoppingCart(customer.Id);
-				if (cart.ShippingId.HasValue)
-                {
-                    ShippingVM.ShippingId = cart.ShippingId.Value;
-                }
+			var customer = GetCustomer();
+			var cart = _orderService.GetShoppingCart(customer.Id);
+			if (cart.ShippingId.HasValue)
+            {
+                ShippingVM.ShippingId = cart.ShippingId.Value;
+            }
 
-				return View(ShippingVM);
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-
-			return Redirect("/");
+			return View(ShippingVM);
 		}
 
 		[HttpPost]
@@ -181,29 +157,16 @@ namespace Eshop.UI.Controllers
                 PaymentMethodVM = new PaymentMethodVM();
             }
 
-			try
-			{
-				var customer = GetCustomer();
-				var cart = _orderService.GetShoppingCart(customer.Id);
-				if (!cart.ShippingId.HasValue) return RedirectToAction("Shipping");
+			var customer = GetCustomer();
+			var cart = _orderService.GetShoppingCart(customer.Id);
+			if (!cart.ShippingId.HasValue) return RedirectToAction("Shipping");
 
-				InitializePaymentOptions(cart.ShippingId.Value);
+			InitializePaymentOptions(cart.ShippingId.Value);
 
-				//TODO: Consider if is worth resolve payment relation like this
-				if (cart.Payment != null) PaymentMethodVM.PaymentMethodId = cart.Payment.PaymentMethod.Id;
+			//TODO: Consider if is worth resolve payment relation like this
+			if (cart.Payment != null) PaymentMethodVM.PaymentMethodId = cart.Payment.PaymentMethod.Id;
 
-				return View(PaymentMethodVM);
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-
-			return Redirect("/");
+			return View(PaymentMethodVM);
 		}
 
 		[HttpPost]
@@ -227,23 +190,10 @@ namespace Eshop.UI.Controllers
 
 		public IActionResult Recapitulation()
 		{
-			try
-			{
-				var customer = GetCustomer();
-				var order = _orderService.GetShoppingCart(customer.Id);
+			var customer = GetCustomer();
+			var order = _orderService.GetShoppingCart(customer.Id);
 
-				return View(order);
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-			}
-
-			return Redirect("/");
+			return View(order);
 		}
 
 		[HttpPost]
@@ -262,36 +212,13 @@ namespace Eshop.UI.Controllers
 
 		public IActionResult Sent()
 		{
-            /*
-			if (order == null) return RedirectToAction("Index");
-			return View(order);
-			*/
+            var customer = GetCustomer();
+            var cart = _orderService.GetShoppingCart(customer.Id);
+			if (cart == null) return RedirectToAction("Index");
 
-            try
-            {
-                var customer = GetCustomer();
-                var cart = _orderService.GetShoppingCart(customer.Id);
-				if (cart == null) return RedirectToAction("Index");
+            _orderService.SendOrder(customer.Id);
 
-                _orderService.SendOrder(customer.Id);
-
-                return View(cart);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-            catch (InvalidDataException ex)
-            {
-                //TODO: Consider how to handle errors
-                _logger.LogInformation(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-
-            return Redirect("/");
+            return View(cart);
         }
 
 		private void InitializeCountries()
