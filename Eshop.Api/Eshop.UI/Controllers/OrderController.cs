@@ -106,6 +106,7 @@ namespace Eshop.UI.Controllers
             return HandleResponse(() =>
             {
                 if (vm.BillingContact == null) return View(vm);
+                InitializeCountries();
 
                 var customer = GetCustomer();
                 vm.BillingContact.Address.CustomerId = customer.Id;

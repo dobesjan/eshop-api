@@ -38,6 +38,7 @@ namespace Eshop.UI.Controllers
             catch (InvalidDataException ex)
             {
                 _logger.LogInformation(ex.Message);
+                RedirectToRoute("/");
             }
 
             var vm = new ProductVM
@@ -64,10 +65,10 @@ namespace Eshop.UI.Controllers
         [HttpPost]
         public IActionResult ToCart(int? productId, int count = 1)
         {
-            if (!productId.HasValue) return Redirect("/");
-
-            try
+            return HandleResponse(() =>
             {
+                if (!productId.HasValue) return Redirect("/");
+
                 var customer = GetCustomer();
 
                 _orderService.AddProductToOrder(productId.Value, customer.Id, count);
@@ -82,22 +83,7 @@ namespace Eshop.UI.Controllers
                 }
 
                 return Redirect(refererUrl);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-            catch (InvalidDataException ex)
-            {
-                //TODO: Consider how to handle errors
-                _logger.LogInformation(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-
-            return Redirect("/");
+            }, Redirect("/"));
         }
     }
 }

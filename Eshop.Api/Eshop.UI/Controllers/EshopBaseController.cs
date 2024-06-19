@@ -81,15 +81,15 @@ namespace Eshop.UI.Controllers
                 _logger.LogInformation(ex, ex.Message);
                 ModelState.Clear();
                 ModelState.AddModelError(string.Empty, ex.Message);
-                return errorResult;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
                 ModelState.Clear();
                 ModelState.AddModelError(string.Empty, "An error occurred while processing your request.");
-                return errorResult;
             }
+
+            return errorResult;
         }
     }
 }
