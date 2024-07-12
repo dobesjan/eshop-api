@@ -1,3 +1,4 @@
+using Eshop.Api.BusinessLayer;
 using Eshop.Api.BusinessLayer.Services;
 using Eshop.Api.BusinessLayer.Services.Currencies;
 using Eshop.Api.BusinessLayer.Services.Images;
@@ -36,14 +37,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-//TODO: Consider how to refactor
-builder.Services.AddScoped<IEshopService, EshopService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IImageService, ImageService>();
-
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<ICurrencyService, CurrencyService>();
+builder.Services.AddEshopServices();
 
 // Configure authentication
 

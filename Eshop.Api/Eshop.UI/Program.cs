@@ -10,23 +10,27 @@ using Eshop.Api.BusinessLayer.Services.Tokens;
 using Eshop.Api.DataAccess.Data;
 using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.UI.ActionFilters;
+using Eshop.UI.Configuration;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<AuthenticationOptions>(builder.Configuration.GetSection("Authentication"));
+builder.Services.Configure<AppSessionOptions>(builder.Configuration.GetSection("Session"));
+
 builder.Services.Configure<CookiePolicyOptions>(options =>
 	options.MinimumSameSitePolicy = SameSiteMode.None
 );
 
-//TODO: Move to configuration class
 builder.Services.AddAuth0WebAppAuthentication(options =>
 {
-    options.Domain = builder.Configuration["Authentication:Domain"];
-    options.ClientId = builder.Configuration["Authentication:ClientId"];
-	options.ClientSecret = builder.Configuration["Authentication:ClientSecret"];
-    options.Scope = "openid profile email";
-    options.CallbackPath = new PathString("/callback");
+	var authOptions = builder.Configuration.GetSection("Authentication").Get<AuthenticationOptions>();
+	options.Domain = authOptions.Domain;
+	options.ClientId = authOptions.ClientId;
+	options.ClientSecret = authOptions.ClientSecret;
+	options.Scope = "openid profile email";
+	options.CallbackPath = new PathString("/callback");
 });
 
 // Add services to the container.
@@ -37,8 +41,8 @@ builder.Services.AddControllersWithViews(options =>
 
 builder.Services.AddSession(options =>
 {
-	//TODO: Make it configurable
-	options.IdleTimeout = TimeSpan.FromHours(168);
+	var sessionOptions = builder.Configuration.GetSection("Authentication").Get<AppSessionOptions>();
+	options.IdleTimeout = TimeSpan.FromHours(sessionOptions.IdleTimeout);
 	options.Cookie.HttpOnly = true;
 	options.Cookie.IsEssential = true;
 });
