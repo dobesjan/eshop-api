@@ -74,7 +74,6 @@ namespace Eshop.UI.Controllers
                 _orderService.AddProductToOrder(productId.Value, customer.Id, count);
 
                 // Get the referer URL
-                //TODO: Consider if there is better way how redirect to previous page
                 var refererUrl = Request.Headers["Referer"].ToString();
                 if (string.IsNullOrEmpty(refererUrl))
                 {

@@ -126,7 +126,6 @@ namespace Eshop.Api.Models.Orders
 				OrderStatus = OrderStatus,
 				IsOrdered = IsOrdered,
 				CreatedDate = CreatedDate,
-				//OrderProducts = OrderProducts != null && OrderProducts.Any() ? OrderProducts.Select(op => new { Id = op.ProductId, Name = op.Product.Name, IsInStock = op.Product.IsInStock, Count = op.Count }) : null,
 				OrderProducts = OrderProducts != null && OrderProducts.Any() ? OrderProducts.Select(op => op.ToJson()) : null,
 				ShippingId = ShippingId,
 				Shipping = Shipping,
