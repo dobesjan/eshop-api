@@ -1,11 +1,5 @@
 ﻿using Eshop.Api.DataAccess.Data;
 using Eshop.Api.Models.Orders;
-using Eshop.Api.Models.ViewModels.Orders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Eshop.Api.DataAccess.Repository.Orders
 {

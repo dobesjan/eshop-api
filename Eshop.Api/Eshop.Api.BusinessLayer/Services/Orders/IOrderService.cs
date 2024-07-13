@@ -1,7 +1,6 @@
 ﻿using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
 using Eshop.Api.Models.Products;
-using Eshop.Api.Models.ViewModels.Contacts;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;

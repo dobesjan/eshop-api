@@ -1,7 +1,6 @@
 ﻿using Eshop.Api.BusinessLayer.Services.Orders;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
-using Eshop.Api.Models.ViewModels.Contacts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

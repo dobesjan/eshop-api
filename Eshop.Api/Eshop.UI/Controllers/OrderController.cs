@@ -6,7 +6,6 @@ using Eshop.Api.DataAccess.Repository.Orders;
 using Eshop.Api.DataAccess.UnitOfWork;
 using Eshop.Api.Models.Contacts;
 using Eshop.Api.Models.Orders;
-using Eshop.Api.Models.ViewModels.Orders;
 using Eshop.UI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
