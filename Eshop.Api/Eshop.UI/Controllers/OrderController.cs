@@ -221,6 +221,7 @@ namespace Eshop.UI.Controllers
             return View(cart);
         }
 
+		#region SelectListInit
 		private void InitializeCountries()
         {
             IEnumerable<Country> countries = _unitOfWork.CountryRepository.GetCountries();
@@ -262,5 +263,6 @@ namespace Eshop.UI.Controllers
 				});
 			}
 		}
+		#endregion
 	}
 }
