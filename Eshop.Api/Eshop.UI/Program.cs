@@ -49,7 +49,7 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 

@@ -14,7 +14,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Eshop.Api.DataAccess.Data
 {
-	public class ApplicationDbContext : DbContext
+	public class ApplicationDbContext : DbContext, IApplicationDbContext
 	{
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<Product> Products { get; set; }
