@@ -180,11 +180,19 @@ namespace Eshop.UI.Controllers
                 var cart = _orderService.GetShoppingCart(customer.Id);
                 _orderService.GeneratePayment(cart.Id, vm.PaymentMethodId);
 
-                //TODO: COnsider if it's worth here
-                cart.IsReadyToSend();
+				if (cart.Customer == null)
+                {
+                    return RedirectToAction(nameof(Address));
+                    
+                }
 
-                //TODO: Switch actions based on payment type
-                return RedirectToAction("Recapitulation");
+				if (cart.Customer.Contact.Person == null || cart.BillingContact == null)
+                {
+					return RedirectToAction(nameof(Address));
+				}
+
+				//TODO: Switch actions based on payment type
+				return RedirectToAction("Recapitulation");
             }, View(vm));
         }
 
